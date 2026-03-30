@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abdul Hafeez Abdul Majeed - Resume</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #1a1a2e;
+      background: #fff;
+      line-height: 1.6;
+      padding: 40px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    @media print {
+      body { padding: 20px; }
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 3px solid #6c3ce0;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #0f0f23;
+    }
+
+    .header .subtitle {
+      font-size: 14px;
+      font-weight: 500;
+      color: #6c3ce0;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-top: 4px;
+    }
+
+    .contact-info {
+      text-align: right;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .contact-info a {
+      color: #6c3ce0;
+      text-decoration: none;
+    }
+
+    .contact-info div { margin-bottom: 2px; }
+
+    .section {
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: #6c3ce0;
+      border-bottom: 1px solid #e8e8f0;
+      padding-bottom: 6px;
+      margin-bottom: 16px;
+    }
+
+    .summary {
+      font-size: 14px;
+      color: #444;
+      line-height: 1.7;
+    }
+
+    .experience-item {
+      margin-bottom: 20px;
+    }
+
+    .exp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+    }
+
+    .exp-role {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f0f23;
+    }
+
+    .exp-period {
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      white-space: nowrap;
+    }
+
+    .exp-company {
+      font-size: 13px;
+      font-weight: 600;
+      color: #6c3ce0;
+      margin-bottom: 6px;
+    }
+
+    .exp-desc {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .skill-category h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f0f23;
+      margin-bottom: 6px;
+    }
+
+    .skill-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .skill-tag {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 10px;
+      background: #f0edfa;
+      color: #6c3ce0;
+      border-radius: 20px;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .project-card {
+      padding: 14px;
+      border: 1px solid #e8e8f0;
+      border-radius: 12px;
+    }
+
+    .project-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f0f23;
+      margin-bottom: 4px;
+    }
+
+    .project-card p {
+      font-size: 11px;
+      color: #777;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .project-card .skill-tags { gap: 4px; }
+    .project-card .skill-tag { font-size: 10px; padding: 2px 8px; }
+
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 10px;
+      color: #bbb;
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1>Abdul Hafeez Abdul Majeed</h1>
+      <div class="subtitle">Software Engineer · AI Services · Product Delivery</div>
+    </div>
+    <div class="contact-info">
+      <div><a href="mailto:hafeez1618@outlook.com">hafeez1618@outlook.com</a></div>
+      <div><a href="https://github.com/nextgenhafeez">github.com/nextgenhafeez</a></div>
+      <div><a href="https://linkedin.com/in/krishnakumargupta">LinkedIn</a></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Professional Summary</div>
+    <p class="summary">
+      Growing software engineer with public GitHub work spanning Java monorepo architecture, Python business applications, TypeScript product interfaces, and AI-focused personal branding. Expert in software delivery that combines technical execution, product thinking, and modern AI-enabled workflows.
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Professional Experience</div>
+    
+    <div class="experience-item">
+      <div class="exp-header">
+        <span class="exp-role">Software Engineering Lead</span>
+        <span class="exp-period">2023 – Present</span>
+      </div>
+      <div class="exp-company">The Blacklayer</div>
+      <p class="exp-desc">Spearheaded frontend architecture for high-performance dashboards, resulting in a 40% improvement in load times. Orchestrated microservices in Node.js and Python for rapid product delivery.</p>
+    </div>
+
+    <div class="experience-item">
+      <div class="exp-header">
+        <span class="exp-role">Full Stack Developer</span>
+        <span class="exp-period">2021 – 2023</span>
+      </div>
+      <div class="exp-company">Credail</div>
+      <p class="exp-desc">Developed and maintained credit management platforms. Integrated complex data visualizations and ensured pixel-perfect implementation of Figma designs in Java and React.</p>
+    </div>
+
+    <div class="experience-item">
+      <div class="exp-header">
+        <span class="exp-role">Digital Product Engineer</span>
+        <span class="exp-period">2020 – 2021</span>
+      </div>
+      <div class="exp-company">Sakeena</div>
+      <p class="exp-desc">Built custom E-commerce and product interfaces for local businesses, focusing on responsive design, modern UI/UX, and performance optimization.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Technical Skills</div>
+    <div class="skills-grid">
+      <div class="skill-category">
+        <h4>Languages</h4>
+        <div class="skill-tags">
+          <span class="skill-tag">TypeScript</span>
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">Java</span>
+          <span class="skill-tag">JavaScript</span>
+          <span class="skill-tag">Swift</span>
+          <span class="skill-tag">C++</span>
+        </div>
+      </div>
+      <div class="skill-category">
+        <h4>Frontend</h4>
+        <div class="skill-tags">
+          <span class="skill-tag">React</span>
+          <span class="skill-tag">Next.js</span>
+          <span class="skill-tag">Angular</span>
+          <span class="skill-tag">Tailwind CSS</span>
+          <span class="skill-tag">Three.js</span>
+        </div>
+      </div>
+      <div class="skill-category">
+        <h4>Backend & Database</h4>
+        <div class="skill-tags">
+          <span class="skill-tag">Node.js</span>
+          <span class="skill-tag">Spring Boot</span>
+          <span class="skill-tag">Express</span>
+          <span class="skill-tag">PostgreSQL</span>
+          <span class="skill-tag">MongoDB</span>
+        </div>
+      </div>
+      <div class="skill-category">
+        <h4>DevOps & Tools</h4>
+        <div class="skill-tags">
+          <span class="skill-tag">Docker</span>
+          <span class="skill-tag">GitHub Actions</span>
+          <span class="skill-tag">AWS</span>
+          <span class="skill-tag">Git</span>
+          <span class="skill-tag">Vercel</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Selected Projects</div>
+    <div class="projects-grid">
+      <div class="project-card">
+        <h4>Credail Monorepo</h4>
+        <p>Cross-stack engineering including backend, Android Java, Swift iOS, scripts, and system documentation.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">Java</span>
+          <span class="skill-tag">Swift</span>
+          <span class="skill-tag">Spring Boot</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <h4>BlackLayer Leads</h4>
+        <p>Leads management with authentication, email verification, admin functionality, and CI/CD deployment.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">React</span>
+          <span class="skill-tag">Node.js</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <h4>Sakeena Web</h4>
+        <p>Modern product interface with React, TypeScript, Vite, and Tailwind. Rich UI component architecture.</p>
+        <div class="skill-tags">
+          <span class="skill-tag">React</span>
+          <span class="skill-tag">TypeScript</span>
+          <span class="skill-tag">Vite</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    © 2024 Abdul Hafeez Abdul Majeed • Crafting Digital Experiences
+  </div>
+
+</body>
+</html>
