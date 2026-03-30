@@ -63,21 +63,12 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
             )}
           </div>
           <div className="flex items-center justify-center">
-            {project.image ? (
-              <div className="relative">
-                {project.logo && (
-                  <img
-                    src={`${import.meta.env.BASE_URL}${project.logo}`}
-                    alt={`${project.title} logo`}
-                    className="absolute -top-6 -left-4 w-14 h-14 sm:w-16 sm:h-16 rounded-xl shadow-lg z-10 border border-white/10"
-                  />
-                )}
-                <img
-                  src={`${import.meta.env.BASE_URL}${project.image}`}
-                  alt={`${project.title} preview`}
-                  className="w-full max-w-[220px] sm:max-w-[240px] md:max-w-[260px] h-auto rounded-2xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
-                />
-              </div>
+            {project.logo ? (
+              <img
+                src={`${import.meta.env.BASE_URL}${project.logo}`}
+                alt={`${project.title} logo`}
+                className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 object-contain drop-shadow-[0_10px_30px_rgba(139,92,246,0.2)]"
+              />
             ) : (
               <div className="w-full h-48 md:h-64 rounded-2xl bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-white/5 flex items-center justify-center">
                 <span className="text-6xl md:text-8xl font-display font-black text-white/[0.06]">{project.id.charAt(0).toUpperCase()}</span>
