@@ -23,7 +23,7 @@ function ParticleBackground() {
 
 export function TechStack() {
   return (
-    <section id="tech" className="relative w-full min-h-screen py-24 md:py-32 bg-[#020202] border-t border-white/5 overflow-hidden">
+    <section id="tech" className="relative w-full min-h-screen py-16 sm:py-24 md:py-32 bg-[#020202] border-t border-white/5 overflow-hidden">
       {/* 3D Background */}
       <div className="absolute inset-0 z-0 opacity-40">
         <Canvas>
@@ -33,15 +33,15 @@ export function TechStack() {
         </Canvas>
       </div>
 
-      <div className="container relative z-10 mx-auto px-6 md:px-12">
-        <div className="mb-16 md:mb-20">
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 md:px-12">
+        <div className="mb-10 sm:mb-16 md:mb-20">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-purple-500 mb-3">My Arsenal</p>
-          <h3 className="text-4xl md:text-5xl lg:text-7xl font-display font-black uppercase tracking-tighter">
+          <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-display font-black uppercase tracking-tighter">
             <TextReveal text="Technology Stack" splitBy="word" stagger={0.08} />
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
           {content.techStack.map((category, idx) => (
             <motion.div
               key={category.title}
@@ -49,11 +49,11 @@ export function TechStack() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1, duration: 0.8 }}
               viewport={{ once: true }}
-              className="p-6 md:p-8 border border-white/10 rounded-[32px] bg-white/[0.02] backdrop-blur-md hover:bg-white/[0.04] transition-colors group relative overflow-hidden"
+              className="p-5 sm:p-6 md:p-8 border border-white/10 rounded-[20px] sm:rounded-[32px] bg-white/[0.02] backdrop-blur-md hover:bg-white/[0.04] transition-colors group relative overflow-hidden"
             >
               <div className="absolute -inset-20 bg-gradient-to-tr from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl pointer-events-none" />
 
-              <h4 className="text-xl md:text-2xl font-display font-bold mb-6 text-white">{category.title}</h4>
+              <h4 className="text-lg sm:text-xl md:text-2xl font-display font-bold mb-4 sm:mb-6 text-white">{category.title}</h4>
               <div className="flex flex-wrap gap-3 relative z-10">
                 {category.skills.map((skill, i) => (
                   <motion.span

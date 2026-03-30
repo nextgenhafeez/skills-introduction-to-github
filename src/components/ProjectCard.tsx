@@ -21,7 +21,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="col-span-1 md:col-span-2 lg:col-span-3 group relative p-8 md:p-12 border border-white/10 rounded-[32px] bg-white/[0.02] backdrop-blur-sm overflow-hidden hover:bg-white/[0.04] transition-all duration-500"
+        className="col-span-1 md:col-span-2 lg:col-span-3 group relative p-5 sm:p-8 md:p-12 border border-white/10 rounded-[20px] sm:rounded-[32px] bg-white/[0.02] backdrop-blur-sm overflow-hidden hover:bg-white/[0.04] transition-all duration-500"
         data-cursor
       >
         {/* Hover glow */}
@@ -29,11 +29,11 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
 
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div>
-            <span className="text-[80px] md:text-[120px] font-display font-black leading-none text-white/[0.03] absolute -top-4 -left-2 select-none">
+            <span className="text-5xl sm:text-[80px] md:text-[120px] font-display font-black leading-none text-white/[0.03] absolute -top-4 -left-2 select-none">
               {num}
             </span>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-purple-400 mb-3">Featured Project</p>
-            <h3 className="text-3xl md:text-4xl font-display font-bold mb-4">{project.title}</h3>
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mb-3 sm:mb-4">{project.title}</h3>
             <p className="text-gray-400 text-base leading-relaxed mb-6">
               {project.longDescription || project.description}
             </p>
@@ -77,7 +77,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
       viewport={{ once: true }}
       transition={{ duration: 0.7, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -8 }}
-      className="group relative p-8 border border-white/10 rounded-[24px] bg-white/[0.02] backdrop-blur-sm overflow-hidden hover:bg-white/[0.04] hover:border-purple-500/20 transition-all duration-500"
+      className="group relative p-5 sm:p-8 border border-white/10 rounded-[20px] sm:rounded-[24px] bg-white/[0.02] backdrop-blur-sm overflow-hidden hover:bg-white/[0.04] hover:border-purple-500/20 transition-all duration-500"
       data-cursor
     >
       <div className="absolute -inset-20 bg-gradient-to-tr from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-3xl pointer-events-none" />
@@ -86,7 +86,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
         <span className="text-[60px] font-display font-black leading-none text-white/[0.03] absolute -top-2 -right-1 select-none">
           {num}
         </span>
-        <h3 className="text-xl font-display font-bold mb-3">{project.title}</h3>
+        <h3 className="text-lg sm:text-xl font-display font-bold mb-3">{project.title}</h3>
         <p className="text-sm text-gray-400 leading-relaxed mb-6">{project.description}</p>
         <div className="flex flex-wrap gap-2 mb-6">
           {project.tech.map((t) => (

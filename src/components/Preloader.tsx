@@ -82,7 +82,7 @@ export function Preloader() {
             {name.split('').map((char, i) => (
               <motion.span
                 key={i}
-                className="text-4xl md:text-7xl font-display font-bold text-white/90"
+                className="text-2xl sm:text-4xl md:text-5xl lg:text-7xl font-display font-bold text-white/90"
                 initial={{ y: 80, opacity: 0 }}
                 animate={
                   phase === 'revealing'
