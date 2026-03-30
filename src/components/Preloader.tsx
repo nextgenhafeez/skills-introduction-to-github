@@ -15,7 +15,8 @@ export function Preloader() {
     hasStarted.current = true
 
     // Preload critical assets
-    const images = ['/pose-wave.png', '/pose-neutral.png', '/character-desk.png']
+    const base = import.meta.env.BASE_URL
+    const images = [`${base}pose-wave.png`, `${base}pose-neutral.png`, `${base}character-desk.png`]
     const imagePromises = images.map(
       (src) =>
         new Promise<void>((resolve) => {

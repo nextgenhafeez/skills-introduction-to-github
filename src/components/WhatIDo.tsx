@@ -30,7 +30,7 @@ export function WhatIDo() {
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             >
               <img
-                src="/character-desk.png"
+                src={`${import.meta.env.BASE_URL}character-desk.png`}
                 alt="Abdul Hafeez coding at desk"
                 className="w-[300px] md:w-[500px] lg:w-[550px] h-auto"
                 style={{
