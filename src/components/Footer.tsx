@@ -4,8 +4,8 @@ import { MagneticButton } from './MagneticButton'
 export function Footer() {
   return (
     <footer className="border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-6 md:px-12 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-10 sm:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-8">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
@@ -59,7 +59,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="mt-10 sm:mt-16 pt-6 sm:pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-[10px] tracking-[0.3em] uppercase text-gray-600">
             &copy; {new Date().getFullYear()} {content.name}
           </p>

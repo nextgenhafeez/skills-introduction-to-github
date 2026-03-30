@@ -40,7 +40,7 @@ export function Navbar() {
           scrolled ? 'bg-[#050505]/80 backdrop-blur-xl border-b border-white/5' : 'bg-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-12 py-5 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-4 sm:py-5 flex justify-between items-center">
           <MagneticButton strength={0.2}>
             <a href="#hero" className="group flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white font-display font-bold text-sm group-hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-shadow">
@@ -104,7 +104,7 @@ export function Navbar() {
                 <motion.a
                   key={link.label}
                   href={link.href}
-                  className="text-3xl font-display font-bold text-white hover:text-purple-400 transition-colors"
+                  className="text-2xl sm:text-3xl font-display font-bold text-white hover:text-purple-400 transition-colors"
                   initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 20 }}
