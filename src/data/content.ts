@@ -5,12 +5,23 @@ export const content = {
 
   projects: [
     {
+      id: "sakeena",
+      title: "Sakeena App",
+      description: "A beautifully crafted Islamic lifestyle app featuring Prayer Times, Qibla Direction, Hijri Calendar, Tasbeeh Counter, and personalized settings.",
+      longDescription: "Sakeena is a comprehensive Islamic lifestyle companion built with modern mobile technologies. It features accurate Prayer Times with notifications, a GPS-powered Qibla compass, Hijri Calendar integration, a digital Tasbeeh counter, and a polished dark-themed UI — all designed for daily spiritual practice.",
+      tech: ["React", "TypeScript", "Tailwind", "Vite"],
+      featured: true,
+      image: "sakeena-showcase.png",
+      logo: "sakeena-logo.png",
+      github: "https://github.com/nextgenhafeez/sakeena-web",
+    },
+    {
       id: "credail",
       title: "Credail Monorepo",
       description: "Cross-stack engineering exposure including backend, Android Java, Swift iOS, scripts, and system documentation. Reflects system organization and broader engineering scope.",
-      longDescription: "A comprehensive monorepo architecture showcasing cross-platform engineering — from Spring Boot backend services to Android Java and Swift iOS mobile clients, unified by shared scripts and thorough system documentation.",
+      longDescription: "A comprehensive monorepo architecture showcasing cross-platform engineering — from Spring Boot backend services to Android Java and Swift iOS mobile clients.",
       tech: ["Java", "Swift", "Spring Boot", "Monorepo"],
-      featured: true,
+      featured: false,
       github: "https://github.com/nextgenhafeez",
     },
     {
@@ -19,15 +30,6 @@ export const content = {
       description: "Leads management application with user authentication, email verification, custom admin functionality, and GitHub Actions deployment.",
       longDescription: "Full-stack leads management platform featuring secure authentication flows, automated email verification, a custom admin dashboard, and CI/CD deployment via GitHub Actions.",
       tech: ["Python", "React", "Node.js", "GitHub Actions"],
-      featured: false,
-      github: "https://github.com/nextgenhafeez",
-    },
-    {
-      id: "sakeena",
-      title: "Sakeena Web",
-      description: "Modern product interface development using React, TypeScript, Vite, and Tailwind with a rich UI component setup.",
-      longDescription: "A modern e-commerce interface built with React and TypeScript, featuring a sophisticated component architecture, performance-first Vite tooling, and pixel-perfect Tailwind CSS styling.",
-      tech: ["React", "TypeScript", "Vite", "Tailwind"],
       featured: false,
       github: "https://github.com/nextgenhafeez",
     }
