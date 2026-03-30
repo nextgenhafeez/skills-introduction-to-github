@@ -120,7 +120,7 @@ function App() {
               className="relative z-10"
             >
               <img
-                src="/character-3d-clean.png"
+                src={`${import.meta.env.BASE_URL}character-3d-clean.png`}
                 alt="Abdul Hafeez 3D Avatar"
                 className="w-[280px] sm:w-[340px] md:w-[420px] lg:w-[500px] xl:w-[560px] h-auto"
                 style={{
@@ -163,7 +163,7 @@ function App() {
           transition={{ delay: 1.9, duration: 0.8 }}
         >
           <MagneticButton strength={0.2}>
-            <a href="/resume.html" download="Abdul_Hafeez_Resume.html" className="flex items-center gap-2 text-xs font-bold tracking-widest opacity-60 hover:opacity-100 transition-all">
+            <a href={`${import.meta.env.BASE_URL}resume.html`} download="Abdul_Hafeez_Resume.html" className="flex items-center gap-2 text-xs font-bold tracking-widest opacity-60 hover:opacity-100 transition-all">
               <span>RESUME</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </a>

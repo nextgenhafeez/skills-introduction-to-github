@@ -2,7 +2,8 @@ import { useRef, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLoading } from '../context/LoadingContext'
 
-const poses = ['/pose-wave.png', '/pose-neutral.png']
+const base = import.meta.env.BASE_URL
+const poses = [`${base}pose-wave.png`, `${base}pose-neutral.png`]
 
 export function ProfileCharacter() {
   const containerRef = useRef<HTMLDivElement>(null)
