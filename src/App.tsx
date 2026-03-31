@@ -94,7 +94,7 @@ function App() {
             {/* Glow behind character */}
             <div className="absolute w-[250px] sm:w-[300px] md:w-[400px] lg:w-[500px] h-[250px] sm:h-[300px] md:h-[400px] lg:h-[500px] bg-purple-600/20 rounded-full blur-[80px] md:blur-[120px] pointer-events-none" />
 
-            {/* Orbiting ring — hidden on small mobile */}
+            {/* Orbiting ring */}
             <motion.div
               className="absolute hidden sm:block w-[240px] h-[320px] sm:w-[280px] sm:h-[370px] md:w-[360px] md:h-[470px] lg:w-[420px] lg:h-[560px] border border-purple-500/[0.08] rounded-full pointer-events-none z-0"
               animate={{ rotate: 360 }}
@@ -104,7 +104,7 @@ function App() {
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-1.5 h-1.5 bg-indigo-400 rounded-full shadow-[0_0_10px_rgba(129,140,248,0.7)]" />
             </motion.div>
 
-            {/* Counter ring — hidden on small mobile */}
+            {/* Counter ring */}
             <motion.div
               className="absolute hidden sm:block w-[200px] h-[270px] sm:w-[240px] sm:h-[320px] md:w-[310px] md:h-[410px] lg:w-[360px] lg:h-[490px] border border-indigo-500/[0.05] rounded-full pointer-events-none z-0"
               animate={{ rotate: -360 }}

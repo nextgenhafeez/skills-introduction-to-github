@@ -43,8 +43,12 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-4 sm:py-5 flex justify-between items-center">
           <MagneticButton strength={0.2}>
             <a href="#hero" className="group flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white font-display font-bold text-sm group-hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-shadow">
-                AH
+              <div className="w-10 h-10 rounded-xl overflow-hidden group-hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-shadow border border-purple-500/30">
+                <img
+                  src={`${import.meta.env.BASE_URL}Portfolio-face.jpeg`}
+                  alt="Abdul Hafeez"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="hidden md:block text-sm font-display font-medium text-white/60 group-hover:text-white transition-colors">
                 Abdul Hafeez
