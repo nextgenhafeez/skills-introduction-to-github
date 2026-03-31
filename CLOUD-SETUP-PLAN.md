@@ -1,5 +1,34 @@
 # Black Layers AI Marketing Agent — Cloud Setup Plan
 
+## Current Verified Google Cloud State
+
+Verified from the Google Cloud CLI on `2026-03-31` without creating any resources:
+
+| Field | Value |
+|-------|-------|
+| Project Name | `BlackLayersAI` |
+| Project ID | `blacklayersai` |
+| Project Number | `733441966639` |
+| Lifecycle State | `ACTIVE` |
+| Create Time | `2026-03-31T14:34:48.672Z` |
+| Active CLI Account | `nextgen.hafeez@gmail.com` |
+
+### Already Enabled APIs
+
+- `bigquery.googleapis.com`
+- `logging.googleapis.com`
+- `monitoring.googleapis.com`
+- `storage.googleapis.com`
+- related BigQuery and storage support services
+
+### Not Yet Enabled For This Plan
+
+- `compute.googleapis.com` is not enabled yet
+- no VM has been created yet
+- no cloud disk layout for OpenClaw has been provisioned yet
+
+> This document is now aligned to the real existing project `blacklayersai`. It does **not** mean the setup has been executed.
+
 ## The Big Picture
 
 ```
@@ -65,11 +94,20 @@
 ### Phase 1: Create Google Cloud VM (Day 1)
 
 ```bash
-# 1. Go to console.cloud.google.com
-# 2. Create new project: "blacklayers-agent"
-# 3. Create VM instance with these settings:
+# 1. Use the existing project:
+#    Project name: BlackLayersAI
+#    Project ID: blacklayersai
+#    Project number: 733441966639
+#
+# 2. Set the active project in gcloud
+gcloud config set project blacklayersai
+#
+# 3. Enable APIs needed for VM-based execution
+#    (serviceusage is usually already available, but keep it here for a clean runbook)
+gcloud services enable compute.googleapis.com
+#
+# 4. Create VM instance with these settings:
 
-# Or use gcloud CLI:
 gcloud compute instances create blacklayers-agent \
   --machine-type=e2-medium \
   --zone=us-central1-a \
@@ -79,6 +117,22 @@ gcloud compute instances create blacklayers-agent \
   --boot-disk-type=pd-ssd \
   --tags=http-server,https-server
 ```
+
+### Phase 1.5: Recommended Project Hygiene Before Provisioning
+
+These are not blockers for experimentation, but they should be done before production use:
+
+```bash
+# Add an environment tag later when you are ready to standardize the project
+# Example values: Production, Development, Test, Staging
+#
+# Also confirm billing is attached before creating the VM.
+```
+
+Notes:
+- During CLI verification, Google Cloud warned that the project does not yet have an `environment` tag.
+- Since `compute.googleapis.com` is not currently enabled, VM creation will fail until that API is enabled.
+- Logging and Monitoring are already enabled, which is good for later health checks and reporting.
 
 ### Phase 2: Install Everything on the VM (Day 1)
 
@@ -248,6 +302,7 @@ Everything saves to the Google Cloud VM disk (persists across restarts):
 ```
 ~/.openclaw/
 ├── skills/                    # All skill files
+│   ├── SKILL-master-brain.md
 │   ├── SKILL-brand-identity.md
 │   ├── SKILL-twitter-manager.md
 │   ├── SKILL-linkedin-manager.md
