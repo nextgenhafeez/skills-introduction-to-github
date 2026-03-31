@@ -9,9 +9,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <a href="https://www.blacklayers.ca" target="_blank" rel="noreferrer" className="flex items-center gap-3 mb-4 group">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden group-hover:bg-white/20 transition-colors">
-                <img src={`${import.meta.env.BASE_URL}blacklayers-logo.png`} alt="Black Layers" className="w-6 h-6 object-contain" />
-              </div>
+              <img src={`${import.meta.env.BASE_URL}blacklayers-logo.png`} alt="Black Layers" className="w-8 h-8 object-contain" />
               <span className="font-display font-medium text-sm group-hover:text-purple-400 transition-colors">{content.name}</span>
             </a>
             <p className="text-xs text-gray-500 leading-relaxed max-w-xs">
