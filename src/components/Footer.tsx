@@ -8,12 +8,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-8">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center text-white font-display font-bold text-xs">
-                AH
+            <a href="https://www.blacklayers.ca" target="_blank" rel="noreferrer" className="flex items-center gap-3 mb-4 group">
+              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden group-hover:bg-white/20 transition-colors">
+                <img src={`${import.meta.env.BASE_URL}blacklayers-logo.png`} alt="Black Layers" className="w-6 h-6 object-contain" />
               </div>
-              <span className="font-display font-medium text-sm">{content.name}</span>
-            </div>
+              <span className="font-display font-medium text-sm group-hover:text-purple-400 transition-colors">{content.name}</span>
+            </a>
             <p className="text-xs text-gray-500 leading-relaxed max-w-xs">
               Software Engineer crafting digital experiences with AI-powered workflows and modern tech stacks.
             </p>
