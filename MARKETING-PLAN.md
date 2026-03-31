@@ -3,241 +3,240 @@
 ## Goal
 Grow Black Layers brand across all platforms using OpenClaw AI via WhatsApp.
 Zero ad spend. Zero manual posting. OpenClaw does everything.
+Abdul checks WhatsApp 15 min/day. That's it.
 
 ---
 
-## OpenClaw Setup
+## OpenClaw Setup (Step by Step)
 
-### 1. Install OpenClaw
+### Step 1: Install OpenClaw
 ```bash
 npm install -g openclaw
 ```
+Then run the onboarding wizard. It starts a Gateway on your machine.
 
-### 2. Connect WhatsApp
-Follow setup at https://openclaw.ai to link your WhatsApp number.
-Once connected, you talk to OpenClaw like a team member via WhatsApp.
+### Step 2: Connect WhatsApp
+Follow the setup at https://docs.openclaw.ai/getting-started to link WhatsApp.
+Once connected, you talk to OpenClaw like a team member via WhatsApp messages.
 
-### 3. Train OpenClaw (Send This Message on WhatsApp)
+### Step 3: Install Custom Skills
+Copy the skills from `/openclaw-skills/` folder into `~/.openclaw/skills/`:
 
-Copy and send this entire message to OpenClaw on WhatsApp:
+```bash
+cp openclaw-skills/SKILL-brand-identity.md ~/.openclaw/skills/
+cp openclaw-skills/SKILL-twitter-manager.md ~/.openclaw/skills/
+cp openclaw-skills/SKILL-linkedin-manager.md ~/.openclaw/skills/
+cp openclaw-skills/SKILL-content-engine.md ~/.openclaw/skills/
+```
 
----
+These skills teach OpenClaw:
+- **brand-identity** — Everything about Black Layers (voice, portfolio, audience)
+- **twitter-manager** — How to create and post tweets using browser automation
+- **linkedin-manager** — How to write and post LinkedIn content
+- **content-engine** — How to write blogs, YouTube scripts, Instagram captions, Quora answers, Reddit comments, cold emails
 
-> You are the full-time digital marketing manager for Black Layers.
->
-> **COMPANY INFO:**
-> - Name: Black Layers
-> - Website: https://www.blacklayers.ca
-> - Founder: Abdul Hafeez Abdul Majeed
-> - Founder Portfolio: https://nextgenhafeez.github.io/skills-introduction-to-github/
-> - Services: iOS App Development, UI/UX Design, App Maintenance, Consulting
-> - Fiverr: Pro Seller (https://www.fiverr.com/hinaqadir)
->
-> **PORTFOLIO (USE THESE IN CONTENT):**
-> - AdClose: Ad blocker app generating $10,000+/month revenue
-> - Sakeena: Islamic prayer & lifestyle companion app
-> - VooConnect: Social media platform with live streaming
-> - DirectPads: Real estate platform with instant cash offers
-> - Offeright: Real estate offer submission platform
->
-> **YOUR DAILY RESPONSIBILITIES:**
->
-> Every single day, without me asking, you must:
->
-> 1. POST 3 TWEETS on Twitter/X — dev tips, app showcases, tech opinions, client wins
-> 2. POST 1 LINKEDIN UPDATE — case studies, portfolio highlights, industry insights
-> 3. POST 1 INSTAGRAM CAPTION — app screenshots, behind-the-scenes, reels ideas
-> 4. ANSWER 2 QUORA QUESTIONS — about app development, linking to blacklayers.ca
-> 5. COMMENT ON 3 REDDIT THREADS — in r/iOSProgramming, r/startups, r/entrepreneur
-> 6. ENGAGE — reply to any comments, DMs, or mentions on all platforms
+### Step 4: Log Into Social Media in OpenClaw's Browser
+Tell OpenClaw on WhatsApp:
+```
+Open browser and go to twitter.com — I'll log in
+```
+Log in once. OpenClaw saves the session and can post going forward.
+
+Repeat for: LinkedIn, Instagram, Quora, Reddit.
+
+### Step 5: Start the Autopilot
+Send this message to OpenClaw on WhatsApp:
+
+> Start your daily marketing routine for Black Layers.
+> Every day, automatically:
+> 1. Post 3 tweets on Twitter (morning tip, afternoon showcase, evening engagement)
+> 2. Post 1 LinkedIn update (case study, insight, or founder story)
+> 3. Post 1 Instagram caption (send me to approve before posting)
+> 4. Answer 2 Quora questions about app development
+> 5. Comment on 3 Reddit threads in r/iOSProgramming, r/startups
+> 6. Send me a WhatsApp summary every evening at 8 PM
 >
 > Every week:
-> 1. WRITE 1 BLOG POST — targeting SEO keywords (iOS development, hire app developer, etc.)
-> 2. WRITE 1 YOUTUBE SCRIPT — for Abdul to record
-> 3. SEND 10 COLD EMAILS — to startups that might need an app built
-> 4. SEND ME A WEEKLY REPORT — followers gained, engagement, leads
+> 1. Write 1 blog post and send it to me for review
+> 2. Write 1 YouTube video script and send it to me
+> 3. Draft 10 cold outreach emails to startups
+> 4. Send me a weekly performance report on Fridays
 >
-> **CONTENT STYLE:**
-> - Professional but human
-> - Show results and numbers (e.g., "$10K/month from AdClose")
-> - Use storytelling (how apps were built, challenges solved)
-> - Always include a call-to-action (visit website, DM for quotes, etc.)
-> - Use relevant hashtags on each platform
->
-> **SEO KEYWORDS TO TARGET:**
-> - iOS app development company
-> - hire iOS developer
-> - mobile app development cost
-> - Swift app developer
-> - custom iPhone app development
-> - best app development agency
-> - React Native developer
-> - AI app development
->
-> **GOAL:**
-> - Get followers, likes, engagement, and inbound customers
-> - Rank blacklayers.ca on Google first page
-> - Generate leads without spending any money on ads
-> - Build Abdul Hafeez as a thought leader in iOS development
->
-> **IMPORTANT:**
-> - Do NOT wait for my instructions. Post every day automatically.
-> - Send me a WhatsApp summary every evening of what you posted.
-> - If someone DMs or comments, respond immediately and let me know.
-> - Never sound salesy. Sound like a developer who builds great products.
+> Use the brand-identity skill for tone and company info.
+> Use browser automation to post directly to each platform.
+> Never wait for my permission on tweets and LinkedIn — just post.
+> For blog posts and emails, send me a draft first on WhatsApp.
 
 ---
 
-## Social Media Accounts to Create
+## OpenClaw Custom Skills (Built by Claude Code)
 
-Create these accounts (one-time setup, all free):
+All skills are in the `/openclaw-skills/` folder:
 
-| Platform | Account Name | URL |
-|----------|-------------|-----|
-| YouTube | Black Layers | youtube.com (create channel) |
-| Twitter/X | @blacklayers | twitter.com/signup |
-| Instagram | @blacklayers.ca | instagram.com |
-| LinkedIn | Black Layers (Company Page) | linkedin.com/company/setup |
-| Reddit | u/blacklayers | reddit.com/register |
-| Quora | Black Layers | quora.com |
-| Medium | Black Layers | medium.com |
-| Dev.to | Black Layers | dev.to |
-| Google Business | Black Layers | business.google.com |
-| Google Search Console | Connect blacklayers.ca | search.google.com/search-console |
+| Skill File | What It Does |
+|-----------|-------------|
+| `SKILL-brand-identity.md` | Core brand knowledge — company info, portfolio, voice, target audience, key messages |
+| `SKILL-twitter-manager.md` | Creates 3 daily tweets, engages with community, uses hashtags, replies to mentions |
+| `SKILL-linkedin-manager.md` | Creates daily LinkedIn posts, engages with connections, generates B2B leads |
+| `SKILL-content-engine.md` | Writes blog posts, YouTube scripts, Instagram captions, Quora answers, Reddit comments, cold emails |
 
-Once created, give OpenClaw access to each platform so it can post automatically.
+### How OpenClaw Uses These Skills
+- OpenClaw reads the skills automatically from `~/.openclaw/skills/`
+- Each skill gives OpenClaw expert-level knowledge in that area
+- The brand-identity skill ensures ALL content is consistent
+- Browser automation lets OpenClaw log into platforms and post directly
 
 ---
 
-## Daily Schedule (OpenClaw Handles Everything)
+## Social Media Accounts to Create (One-Time, All Free)
 
-| Time | Platform | What OpenClaw Posts |
+| Platform | Account Name | URL | Purpose |
+|----------|-------------|-----|---------|
+| YouTube | Black Layers | youtube.com | Video content, tutorials, showcases |
+| Twitter/X | @blacklayers | x.com | Daily tips, engagement, community |
+| Instagram | @blacklayers.ca | instagram.com | Visual content, reels, stories |
+| LinkedIn | Black Layers (Company) | linkedin.com | B2B leads, professional content |
+| Reddit | u/blacklayers | reddit.com | Community engagement, expertise |
+| Quora | Black Layers | quora.com | SEO backlinks, authority |
+| Medium | Black Layers | medium.com | Blog posts, SEO |
+| Dev.to | blacklayers | dev.to | Tech blog, developer community |
+| Google Business | Black Layers | business.google.com | Google Maps, local SEO |
+| Google Search Console | — | search.google.com/search-console | SEO monitoring |
+
+**Total cost: $0**
+
+---
+
+## Daily Autopilot Schedule (OpenClaw Handles Everything)
+
+| Time | Platform | What OpenClaw Does |
 |------|----------|-------------------|
-| 8:00 AM | Twitter | Morning dev tip or industry insight |
-| 9:00 AM | LinkedIn | Case study, portfolio win, or hiring insight |
-| 10:00 AM | Instagram | App screenshot or reel caption |
-| 11:00 AM | Quora | Answer 2 app development questions |
-| 1:00 PM | Reddit | Comment on 3 relevant threads |
-| 3:00 PM | Twitter | App showcase or client testimonial |
-| 5:00 PM | Twitter | Evening engagement post or poll |
-| 8:00 PM | WhatsApp | Send you daily summary report |
-
----
+| 8:00 AM | Twitter | Post morning dev tip |
+| 9:00 AM | LinkedIn | Post case study or insight |
+| 10:00 AM | Quora | Answer 2 app development questions |
+| 11:00 AM | Reddit | Comment helpfully on 3 threads |
+| 2:00 PM | Twitter | Post portfolio showcase |
+| 3:00 PM | Instagram | Send caption draft to Abdul on WhatsApp |
+| 6:00 PM | Twitter | Post engagement question or poll |
+| 8:00 PM | WhatsApp | Send Abdul daily summary |
 
 ## Weekly Schedule
 
-| Day | Task |
-|-----|------|
-| Monday | OpenClaw writes & publishes blog post on Medium + Dev.to |
-| Tuesday | OpenClaw sends 5 cold outreach emails to startups |
-| Wednesday | OpenClaw writes YouTube video script, sends to you on WhatsApp |
-| Thursday | OpenClaw sends 5 more cold outreach emails |
-| Friday | OpenClaw sends weekly performance report |
-| Saturday | You record YouTube video (OpenClaw wrote the script) |
-| Sunday | Rest day |
+| Day | OpenClaw Task |
+|-----|--------------|
+| Monday | Write & publish blog post on Medium + Dev.to |
+| Tuesday | Draft 5 cold outreach emails, send to Abdul for review |
+| Wednesday | Write YouTube video script, send to Abdul on WhatsApp |
+| Thursday | Draft 5 more cold outreach emails |
+| Friday | Send weekly performance report to Abdul |
+| Saturday | Abdul records YouTube video (script already provided) |
+| Sunday | Rest |
 
 ---
 
 ## Your Job (15 Minutes/Day)
 
-1. Check WhatsApp for OpenClaw's daily summary
-2. Approve or reply "looks good" to posts
-3. Record 1 YouTube video per week (script provided by OpenClaw)
-4. Review any leads or customer inquiries OpenClaw flags
-5. That's it.
-
----
-
-## Content Ideas Bank (For OpenClaw to Use)
-
-### High-Engagement Posts
-1. "I built an ad blocker making $10K/month. Here's how."
-2. "From developer to agency founder — my journey"
-3. "How much does it really cost to build an iOS app?"
-4. "5 mistakes startups make when hiring app developers"
-5. "I built a prayer app used by thousands. Here's what I learned."
-6. "Why we chose React for Sakeena and Swift for AdClose"
-7. "Behind the scenes: building VooConnect's live streaming feature"
-8. "Client wanted an app in 30 days. We delivered in 21."
-9. "The tech stack behind a $10K/month app"
-10. "What Fiverr Pro taught me about running a dev agency"
-
-### YouTube Video Ideas
-1. "How I Built an App Making $10K/Month"
-2. "iOS App Development — Complete Beginner Guide"
-3. "Day in the Life of an App Developer"
-4. "Building a Real Estate App From Scratch"
-5. "SwiftUI vs UIKit in 2026 — Which to Learn?"
-6. "How to Hire the Right App Developer"
-7. "I Built 5 Apps for Clients — Here's What I Learned"
-8. "How to Launch Your App on the App Store"
-
-### Blog Post Topics (SEO)
-1. "How Much Does iOS App Development Cost in 2026?"
-2. "Top 10 Features Every Mobile App Needs"
-3. "React Native vs Swift: Which Is Right for Your Project?"
-4. "How to Hire an iOS Developer: Complete Guide"
-5. "Why Your Startup Needs a Mobile App"
-6. "App Maintenance: What Happens After Launch?"
-7. "Building an Islamic App: Lessons from Sakeena"
-8. "From Idea to App Store: The Complete Process"
-
----
-
-## Growth Targets
-
-| Timeline | Followers | Leads | Revenue |
-|----------|-----------|-------|---------|
-| Month 1 | 500 total across platforms | 2-3 inquiries | -- |
-| Month 3 | 2,000+ total | 5-10 inquiries/month | First inbound client |
-| Month 6 | 5,000+ total | 15-20 inquiries/month | 2-3 clients/month |
-| Month 12 | 15,000+ total | 30+ inquiries/month | Consistent inbound revenue |
-
----
-
-## Website SEO Checklist (Claude Code Will Implement)
-
-- [ ] Add meta title & description to every page
-- [ ] Add Open Graph tags (for social media link previews)
-- [ ] Add schema markup (LocalBusiness + Organization)
-- [ ] Create sitemap.xml
-- [ ] Create robots.txt
-- [ ] Add blog section to blacklayers.ca
-- [ ] Submit sitemap to Google Search Console
-- [ ] Add Google Analytics tracking
-- [ ] Optimize images (compress, add alt tags)
-- [ ] Improve page load speed
+| Task | Time |
+|------|------|
+| Read OpenClaw's WhatsApp summary | 5 min |
+| Approve or tweak any flagged content | 5 min |
+| Reply to any hot leads OpenClaw found | 5 min |
+| Record 1 YouTube video per week (Saturday) | 30 min/week |
 
 ---
 
 ## How to Talk to OpenClaw on WhatsApp
 
-Once connected, just message it like a colleague:
+Just message naturally:
 
-- "Post something about AdClose on Twitter"
-- "Write me a LinkedIn post about our Sakeena app"
-- "What did we post today?"
-- "Send me this week's report"
-- "Find startups on Reddit that need an app developer"
-- "Write a cold email for a fitness startup that needs an app"
-- "What's trending in iOS development? Post about it"
-
-OpenClaw will handle it and confirm on WhatsApp.
+- **"Post about AdClose on Twitter"** → It writes and posts a tweet
+- **"Write a LinkedIn post about our Sakeena app"** → It creates and posts
+- **"What did we post today?"** → It shows you everything
+- **"Write me a blog about iOS development costs"** → It drafts a full article
+- **"Find startups that need an app on Reddit"** → It searches and reports back
+- **"Write a cold email for a fitness startup"** → It drafts a personalized email
+- **"How many followers do we have?"** → It checks and reports
+- **"Post something trending about SwiftUI"** → It researches and posts
+- **"Reply to all our Twitter mentions"** → It engages automatically
 
 ---
 
-## Next Steps
+## Content Ideas Bank
 
-1. Install OpenClaw: `npm install -g openclaw`
-2. Connect WhatsApp
-3. Send the training prompt above
-4. Create social media accounts (list above)
-5. Give OpenClaw access to each platform
-6. Let it run. Check WhatsApp daily.
-7. Ask Claude Code to implement website SEO changes.
+### Viral-Potential Posts
+1. "I built an ad blocker making $10K/month. Here's the full story."
+2. "From zero to Pro Seller on Fiverr — what nobody tells you"
+3. "How much does it REALLY cost to build an iOS app? (honest breakdown)"
+4. "I shipped 20+ apps. Here are my 5 biggest failures."
+5. "Why 90% of app ideas fail before launch"
+6. "The $0 marketing strategy that got us our first 10 clients"
+7. "SwiftUI vs UIKit in 2026 — the definitive answer"
+8. "I built a prayer app for millions of Muslims. Here's what I learned."
+9. "Client asked for an app in 30 days. We did it in 21."
+10. "The tech stack behind a $10K/month app (full breakdown)"
+
+### YouTube Video Ideas
+1. "How I Built an App Making $10K/Month" (your #1 video)
+2. "iOS App Development — Complete Beginner to Pro Guide"
+3. "A Day in the Life of a Mobile App Developer"
+4. "How to Hire the Right App Developer (Don't Get Scammed)"
+5. "I Built 5 Client Apps — Honest Review of Each"
+6. "SwiftUI Tutorial — Build Your First App in 30 Minutes"
+7. "How to Launch Your App on the App Store (Step by Step)"
+8. "React Native vs Swift — Which Should You Learn?"
+
+### SEO Blog Topics
+1. "How Much Does iOS App Development Cost in 2026?"
+2. "Top 10 Features Every Mobile App Needs"
+3. "React Native vs Swift: Complete Comparison Guide"
+4. "How to Hire an iOS Developer: Everything You Need to Know"
+5. "Why Your Startup Needs a Mobile App in 2026"
+6. "App Maintenance: What Happens After Launch?"
+7. "From Idea to App Store: The Complete 30-Day Process"
+8. "AI in Mobile Apps: How to Add Smart Features"
+
+---
+
+## Growth Targets
+
+| Timeline | Followers (All Platforms) | Monthly Leads | Revenue |
+|----------|--------------------------|---------------|---------|
+| Month 1 | 500 | 2-3 inquiries | — |
+| Month 3 | 2,000 | 5-10 inquiries | First inbound client |
+| Month 6 | 5,000 | 15-20 inquiries | 2-3 clients/month |
+| Month 12 | 15,000 | 30+ inquiries | Consistent inbound |
+
+---
+
+## Website SEO Checklist (Claude Code Implements)
+
+- [ ] Meta title & description on every page
+- [ ] Open Graph tags (social media link previews)
+- [ ] Schema markup (LocalBusiness + Organization)
+- [ ] sitemap.xml
+- [ ] robots.txt
+- [ ] Blog section on blacklayers.ca
+- [ ] Submit sitemap to Google Search Console
+- [ ] Google Analytics tracking
+- [ ] Image optimization (compress, alt tags)
+- [ ] Page speed optimization
+
+---
+
+## Summary
+
+| Who | Role |
+|-----|------|
+| **OpenClaw** | Full-time digital marketing agent — creates content, posts daily, engages, writes blogs, finds leads, reports to you on WhatsApp |
+| **You** | 15 min/day on WhatsApp — review, approve, record 1 video/week |
+| **Claude Code** | Technical partner — builds website SEO, blog, and OpenClaw skills |
+
+**Total cost: $0**
+**Your daily time: 15 minutes**
+**OpenClaw's daily time: 24/7**
 
 ---
 
 *Plan created: March 31, 2026*
-*Total cost: $0*
-*Your time commitment: 15 min/day*
+*Skills built by: Claude Code (Opus 4.6)*
+*Last updated: March 31, 2026*
