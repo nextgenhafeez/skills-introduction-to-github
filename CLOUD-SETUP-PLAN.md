@@ -1,399 +1,246 @@
 # Black Layers AI Marketing Agent — Cloud Setup Plan
 
-## Current Verified Google Cloud State
+## Current Live System (April 1, 2026)
 
-Verified from the Google Cloud CLI on `2026-03-31` without creating any resources:
-
+### Google Cloud VM
 | Field | Value |
 |-------|-------|
-| Project Name | `BlackLayersAI` |
-| Project ID | `blacklayersai` |
-| Project Number | `733441966639` |
-| Lifecycle State | `ACTIVE` |
-| Create Time | `2026-03-31T14:34:48.672Z` |
-| Active CLI Account | `nextgen.hafeez@gmail.com` |
+| Project | `BlackLayersAI` (ID: `blacklayersai`) |
+| VM Name | `blacklayers-agent` |
+| IP | `34.132.116.116` |
+| Machine | `e2-medium` (2 vCPU, 4GB RAM) |
+| Disk | 100GB SSD |
+| OS | Ubuntu 22.04 LTS |
+| OpenClaw | v2026.3.31 |
+| Agent Name | **BLAI (BlackLayer AI)** |
+| Gateway | Running (systemd, auto-restarts on reboot) |
+| WhatsApp | Connected (+212641503230) |
+| Skills | 10 custom skills installed |
+| Ollama on VM | **Permanently disabled** (saves memory) |
+| Cost | **$0** (using $300 free credits) |
 
-### Already Enabled APIs
+### Your Mac (Local Backup)
+| Field | Value |
+|-------|-------|
+| Machine | MacBook Pro M3 Pro, 18GB RAM |
+| Ollama | Installed (v0.19.0) |
+| Model | Qwen 2.5 14B (9GB, downloaded) |
+| Status | Sleeping — only runs when needed |
 
-- `bigquery.googleapis.com`
-- `logging.googleapis.com`
-- `monitoring.googleapis.com`
-- `storage.googleapis.com`
-- related BigQuery and storage support services
+---
 
-### Not Yet Enabled For This Plan
-
-- `compute.googleapis.com` is not enabled yet
-- no VM has been created yet
-- no cloud disk layout for OpenClaw has been provisioned yet
-
-> This document is now aligned to the real existing project `blacklayersai`. It does **not** mean the setup has been executed.
-
-## The Big Picture
+## How BLAI Works — The Complete Flow
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│                    GOOGLE CLOUD VM                        │
-│                   (runs 24/7, never sleeps)                │
-│                                                          │
-│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐ │
-│  │  OpenClaw    │  │  Headless     │  │  AI Content      │ │
-│  │  Gateway     │  │  Chrome       │  │  Generator       │ │
-│  │  (brain)     │  │  (browser)    │  │  (images/video)  │ │
-│  └──────┬──────┘  └──────┬───────┘  └────────┬─────────┘ │
-│         │                │                    │           │
-│         └────────────────┼────────────────────┘           │
-│                          │                                │
-│              ┌───────────┴───────────┐                    │
-│              │   Skill Files &       │                    │
-│              │   Memory Storage      │                    │
-│              │   (Google Cloud Disk)  │                    │
-│              └───────────────────────┘                    │
-│                                                          │
-└────────────────────────┬─────────────────────────────────┘
-                         │
-            ┌────────────┼────────────────┐
-            │            │                │
-      ┌─────┴─────┐ ┌───┴────┐  ┌───────┴───────┐
-      │ WhatsApp   │ │Twitter │  │ LinkedIn      │
-      │ (to you)   │ │ X.com  │  │ Instagram     │
-      │            │ │        │  │ Reddit/Quora  │
-      └───────────┘ └────────┘  └───────────────┘
+You/Brother/Wife send WhatsApp message
+            │
+            ▼
+    ┌───────────────────┐
+    │  Google Cloud VM   │
+    │  (24/7, always on) │
+    └───────┬───────────┘
+            │
+            ▼
+    Try Gemini 3.1 Pro ──── Works? ──── ✅ Respond instantly
+            │
+            │ Rate limited?
+            ▼
+    Try Gemini 2.5 Flash ── Works? ──── ✅ Respond instantly
+            │
+            │ Rate limited?
+            ▼
+    Try Gemini 2.0 Flash ── Works? ──── ✅ Respond instantly
+            │
+            │ ALL 3 rate limited? (very rare)
+            ▼
+    ┌─────────────────────────────────────────────┐
+    │  Is Abdul's Mac online?                      │
+    │                                              │
+    │  YES → Route to Mac's Ollama (Qwen 14B)     │
+    │         Respond via GPU, unlimited, fast     │
+    │         Send notification: "⚡ Using local   │
+    │         GPU (Qwen 2.5 14B) — Gemini limit"  │
+    │                                              │
+    │  NO  → Send message to everyone:             │
+    │         "⏳ Rate limit hit. Mac is offline.   │
+    │         Retrying in 60 seconds..."           │
+    │         Then auto-retry after 60 sec         │
+    └─────────────────────────────────────────────┘
 ```
 
 ---
 
-## What You Need on Google Cloud
+## Who Can Use BLAI (WhatsApp)
 
-### Recommended VM Spec
+| Number | Person | Access |
+|--------|--------|--------|
+| +212641503230 | Abdul (Owner) | Full control — can change strategy, approve content, give any instruction |
+| +923324577459 | Team member | Can ask questions, request content, get reports |
+| +14373310603 | Team member | Can ask questions, request content, get reports |
+| +212689063416 | Team member | Can ask questions, request content, get reports |
 
-| Resource | Spec | Why |
-|----------|------|-----|
-| Machine Type | `e2-standard-4` (4 vCPU, 16 GB RAM) | Runs OpenClaw + Chrome + AI tools smoothly |
-| Disk | 100 GB SSD | Stores skills, memory, generated images/videos |
-| OS | Ubuntu 22.04 LTS | Stable, well-supported |
-| GPU | **NOT needed** | OpenClaw uses cloud AI APIs (Claude/GPT), not local models |
-| Region | `us-central1` | Cheapest, good connectivity |
+### What Everyone Sees
 
-### Estimated Cost
+When the AI model changes (due to rate limits or switching to local GPU), **everyone in the chat gets notified**:
 
-| Tier | Spec | Monthly Cost |
-|------|------|-------------|
-| **Budget** | `e2-medium` (2 vCPU, 4 GB) | ~$25/month |
-| **Recommended** | `e2-standard-4` (4 vCPU, 16 GB) | ~$50/month |
-| **Power** | `e2-standard-8` (8 vCPU, 32 GB) | ~$100/month |
+```
+🔄 MODEL SWITCH NOTIFICATION
 
-**Start with Budget ($25/month).** Upgrade later if needed.
+Previous: Gemini 3.1 Pro (Google Cloud)
+Now using: Gemini 2.5 Flash (Google Cloud)
+Reason: Rate limit on primary model
+Speed: Still instant ⚡
 
-> Google Cloud gives **$300 free credits** for new accounts — that's 12 months free on the budget tier.
+Note: All responses are still high quality.
+The fallback model is equally capable.
+```
+
+Or if it switches to local Mac:
+```
+🔄 MODEL SWITCH NOTIFICATION
+
+Previous: Gemini (Google Cloud)
+Now using: Qwen 2.5 14B (Abdul's Mac — Local GPU)
+Reason: All Gemini models rate-limited
+Speed: Fast (Apple M3 Pro GPU) ⚡
+
+Note: Running on local hardware.
+Unlimited responses. No rate limits.
+```
+
+Or if Mac is offline:
+```
+⏳ TEMPORARY PAUSE
+
+All cloud models are rate-limited and local Mac is offline.
+I'll automatically retry in 60 seconds.
+Your message is queued — you won't lose it.
+
+Tip: This usually resolves within 1-2 minutes.
+```
 
 ---
 
-## Complete Setup Steps
+## How Local Mac Fallback Works
 
-### Phase 1: Create Google Cloud VM (Day 1)
+### Setup (One-time — already done)
+1. Ollama installed on Mac ✅
+2. Qwen 2.5 14B downloaded (9GB) ✅
+3. Ollama runs on `localhost:11434` when Mac is on
+
+### How Cloud Connects to Mac (When Needed)
+
+**Option A: Tailscale (Recommended — Free)**
+Creates a private network between cloud VM and your Mac.
 
 ```bash
-# 1. Use the existing project:
-#    Project name: BlackLayersAI
-#    Project ID: blacklayersai
-#    Project number: 733441966639
-#
-# 2. Set the active project in gcloud
-gcloud config set project blacklayersai
-#
-# 3. Enable APIs needed for VM-based execution
-#    (serviceusage is usually already available, but keep it here for a clean runbook)
-gcloud services enable compute.googleapis.com
-#
-# 4. Create VM instance with these settings:
+# On your Mac:
+brew install tailscale
+tailscale up
 
-gcloud compute instances create blacklayers-agent \
-  --machine-type=e2-medium \
-  --zone=us-central1-a \
-  --image-family=ubuntu-2204-lts \
-  --image-project=ubuntu-os-cloud \
-  --boot-disk-size=100GB \
-  --boot-disk-type=pd-ssd \
-  --tags=http-server,https-server
+# On cloud VM:
+tailscale up
+# Now VM can reach Mac at its Tailscale IP
 ```
 
-### Phase 1.5: Recommended Project Hygiene Before Provisioning
+Once connected, the cloud VM can reach your Mac's Ollama at `http://<mac-tailscale-ip>:11434`. BLAI auto-switches when Gemini is limited.
 
-These are not blockers for experimentation, but they should be done before production use:
-
+**Option B: SSH Tunnel**
 ```bash
-# Add an environment tag later when you are ready to standardize the project
-# Example values: Production, Development, Test, Staging
-#
-# Also confirm billing is attached before creating the VM.
+# On your Mac (run when you want to enable fallback):
+ssh -R 11434:localhost:11434 tonny@34.132.116.116
+# This exposes your Mac's Ollama to the cloud VM
 ```
 
-Notes:
-- During CLI verification, Google Cloud warned that the project does not yet have an `environment` tag.
-- Since `compute.googleapis.com` is not currently enabled, VM creation will fail until that API is enabled.
-- Logging and Monitoring are already enabled, which is good for later health checks and reporting.
+**Option C: Mac Off = No Fallback**
+If your Mac is off, BLAI just retries Gemini after 60 seconds. The 3-model cycle means this is rarely needed.
 
-### Phase 2: Install Everything on the VM (Day 1)
+### When Does Mac Kick In?
+- Only when ALL 3 Gemini models are rate-limited (rare)
+- Only when Mac is on and Ollama is running
+- BLAI checks Mac availability before routing
+- If Mac is off → auto-retry Gemini in 60 sec
 
-SSH into the VM and run:
-
-```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install Node.js 20
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# Install Chrome (headless browser for OpenClaw)
-wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-sudo apt update && sudo apt install -y google-chrome-stable
-
-# Install FFmpeg (for video creation)
-sudo apt install -y ffmpeg
-
-# Install ImageMagick (for image creation)
-sudo apt install -y imagemagick
-
-# Install Python + AI image/video tools
-sudo apt install -y python3-pip python3-venv
-pip3 install Pillow moviepy edge-tts
-
-# Install OpenClaw
-npm install -g openclaw
-
-# Install PM2 (keeps OpenClaw running 24/7, auto-restarts)
-npm install -g pm2
-```
-
-### Phase 3: Install Custom Skills (Day 1)
-
-```bash
-# Create skills directory
-mkdir -p ~/.openclaw/skills
-
-# Clone your repo with the skills
-git clone https://github.com/nextgenhafeez/skills-introduction-to-github.git ~/blacklayers
-
-# Copy skills
-cp ~/blacklayers/openclaw-skills/*.md ~/.openclaw/skills/
-```
-
-### Phase 4: Start OpenClaw 24/7 (Day 1)
-
-```bash
-# Start OpenClaw with PM2 (auto-restarts, runs forever)
-pm2 start "openclaw" --name blacklayers-agent
-
-# Make it survive reboots
-pm2 startup
-pm2 save
-
-# Check status anytime
-pm2 status
-pm2 logs blacklayers-agent
-```
-
-### Phase 5: Connect WhatsApp (Day 1)
-
-Follow OpenClaw's WhatsApp setup. Once connected:
-- OpenClaw runs on Google Cloud 24/7
-- You talk to it from your phone via WhatsApp
-- It posts, creates, engages — all from the cloud
-- Your Mac stays untouched
+### Your Mac Stays Clean
+- Ollama only activates when a request comes in
+- Uses GPU (Apple Silicon unified memory) — barely touches CPU
+- No constant background process
+- Close Ollama app anytime to disable fallback
 
 ---
 
-## AI Content Creation Tools (Free)
+## AI Models Explained
 
-OpenClaw on the cloud VM can use these free tools to create content:
+### Cloud Models (Google Gemini — Free)
 
-### Images
+| Model | Role | Speed | Quality | Limit |
+|-------|------|-------|---------|-------|
+| **Gemini 3.1 Pro Preview** | Primary | Instant | Excellent | 15 req/min |
+| **Gemini 2.5 Flash** | Fallback 1 | Instant | Very Good | Separate limit |
+| **Gemini 2.0 Flash** | Fallback 2 | Instant | Good | Separate limit |
 
-| Tool | What It Does | Cost |
-|------|-------------|------|
-| **Canva API** (via browser) | Create social media graphics | Free tier |
-| **ImageMagick** | Generate text-based graphics, banners | Free (installed) |
-| **Unsplash API** | Get free stock photos | Free |
-| **Carbon.now.sh** (via browser) | Beautiful code screenshots for dev posts | Free |
+### Local Model (Your Mac — Unlimited)
 
-### Videos
+| Model | Role | Speed | Quality | Limit |
+|-------|------|-------|---------|-------|
+| **Qwen 2.5 14B** | GPU Fallback | <1 sec (M3 Pro) | Very Good | **Unlimited** |
 
-| Tool | What It Does | Cost |
-|------|-------------|------|
-| **FFmpeg** | Combine images + audio into videos | Free (installed) |
-| **Edge-TTS** | AI text-to-speech (Microsoft voices) | Free |
-| **MoviePy** | Python video editing/creation | Free (installed) |
+### How BLAI Gets Smarter Over Time
 
-### Content Flow for Auto-Generated Videos
+BLAI doesn't change its AI model — it gets smarter through **memory**:
 
 ```
-1. OpenClaw writes script (using content-engine skill)
-2. Edge-TTS converts script to voiceover audio
-3. OpenClaw generates/collects images (app screenshots, stock photos)
-4. FFmpeg/MoviePy combines images + audio into video
-5. OpenClaw uploads to YouTube via browser automation
-6. OpenClaw sends you WhatsApp notification: "New video uploaded ✓"
+Week 1: BLAI knows the skills you gave it
+         ↓
+Week 2: BLAI remembers what content worked best
+         Remembers Abdul's preferences and corrections
+         ↓
+Week 4: BLAI has learned optimal posting times
+         Knows which hashtags drive engagement
+         Remembers 50+ research topics
+         ↓
+Week 12: BLAI has months of engagement data
+          Knows exactly what content your audience likes
+          Has a database of leads and their status
+          Understands Abdul's communication style perfectly
+          ↓
+Week 52: BLAI is an expert in your business
+          Years of memory, patterns, and intelligence
+          Irreplaceable knowledge base
 ```
 
-### Content Flow for Auto-Generated Images
-
-```
-1. OpenClaw writes post text (using twitter/linkedin skill)
-2. OpenClaw opens Canva in browser, uses template
-3. Fills in text, adjusts colors to brand (black/white/blue)
-4. Downloads the image
-5. Posts image + caption to Instagram/Twitter/LinkedIn
-6. Reports to you on WhatsApp
-```
+The skills (files) stay the same. The memory (learned data) grows every day. This is how BLAI improves without changing the AI model.
 
 ---
 
-## Enhanced Skills for Cloud (New)
+## BLAI's 10 Skills
 
-### SKILL-video-creator.md
-Creates YouTube Shorts, Reels, and TikTok videos automatically:
-- Writes script from content-engine
-- Generates AI voiceover with Edge-TTS
-- Combines with app screenshots/screen recordings
-- Adds background music (royalty-free)
-- Uploads to YouTube, sends you notification
-
-### SKILL-image-creator.md
-Creates social media graphics automatically:
-- Uses Canva browser automation OR ImageMagick
-- Creates quote cards, app showcases, infographics
-- Follows brand colors (black, white, blue)
-- Sizes for each platform (Twitter 1200x675, Instagram 1080x1080, LinkedIn 1200x627)
-
-### SKILL-analytics-reporter.md
-Tracks performance and sends you reports:
-- Checks follower counts on each platform
-- Tracks post engagement (likes, comments, shares)
-- Identifies top-performing content
-- Suggests what to post more of
-- Sends weekly report on WhatsApp every Friday
-
-### SKILL-lead-hunter.md
-Finds potential clients automatically:
-- Searches Product Hunt for new startups without apps
-- Monitors Reddit/Twitter for "looking for app developer"
-- Checks Fiverr for new relevant buyer requests
-- Drafts personalized outreach for each lead
-- Sends lead list to you on WhatsApp daily
-
-### SKILL-self-improver.md
-Makes OpenClaw smarter over time:
-- Tracks which posts get the most engagement
-- Learns what content style works best
-- Adjusts posting times based on engagement data
-- A/B tests different post formats
-- Updates its own strategy weekly
-- Sends you improvement report: "This week I learned..."
+| # | Skill | What It Does |
+|---|-------|-------------|
+| 1 | **master-brain** | Core intelligence — coordinates everything, listens on WhatsApp, learns daily |
+| 2 | **brand-identity** | Company DNA — voice, portfolio, messaging, target audience |
+| 3 | **twitter-manager** | Creates 3 daily tweets, engages with dev community |
+| 4 | **linkedin-manager** | Creates daily professional posts, B2B lead generation |
+| 5 | **content-engine** | Writes blogs, YouTube scripts, captions, Quora, Reddit, emails |
+| 6 | **video-creator** | Auto-generates videos with AI voiceover + screenshots |
+| 7 | **image-creator** | Creates social media graphics via Canva + ImageMagick |
+| 8 | **analytics-reporter** | Tracks all platforms, sends daily/weekly WhatsApp reports |
+| 9 | **lead-hunter** | Finds clients on Reddit, Twitter, Product Hunt, Fiverr |
+| 10 | **self-improver** | Reviews performance, adjusts strategy weekly, runs experiments |
 
 ---
 
-## Memory & Data Storage
+## Daily Schedule (BLAI Does Automatically)
 
-Everything saves to the Google Cloud VM disk (persists across restarts):
-
-```
-~/.openclaw/
-├── skills/                    # All skill files
-│   ├── SKILL-master-brain.md
-│   ├── SKILL-brand-identity.md
-│   ├── SKILL-twitter-manager.md
-│   ├── SKILL-linkedin-manager.md
-│   ├── SKILL-content-engine.md
-│   ├── SKILL-video-creator.md
-│   ├── SKILL-image-creator.md
-│   ├── SKILL-analytics-reporter.md
-│   ├── SKILL-lead-hunter.md
-│   └── SKILL-self-improver.md
-├── memory/                    # OpenClaw's persistent memory
-│   ├── brand-knowledge.json
-│   ├── posting-history.json
-│   ├── engagement-data.json
-│   ├── leads-database.json
-│   └── learning-log.json
-└── content/                   # Generated content archive
-    ├── images/
-    ├── videos/
-    ├── blog-posts/
-    └── scripts/
-```
-
-### Backup to Google Cloud Storage (Optional)
-
-```bash
-# Daily backup cron job
-0 2 * * * gsutil -m rsync -r ~/.openclaw gs://blacklayers-agent-backup/
-```
-
----
-
-## Daily Lifecycle (What Happens Every 24 Hours)
-
-```
-6:00 AM  — OpenClaw wakes up, checks trending topics
-7:00 AM  — Generates today's content (3 tweets, 1 LinkedIn, 1 Instagram)
-8:00 AM  — Posts morning tweet
-8:30 AM  — Creates image for Instagram post
-9:00 AM  — Posts LinkedIn update
-10:00 AM — Answers 2 Quora questions
-11:00 AM — Comments on 3 Reddit threads
-12:00 PM — Hunts for leads (Product Hunt, Reddit, Twitter)
-2:00 PM  — Posts afternoon tweet with app showcase image
-3:00 PM  — Sends Instagram post draft to Abdul on WhatsApp
-4:00 PM  — Engages with comments/mentions on all platforms
-5:00 PM  — Creates tomorrow's content drafts
-6:00 PM  — Posts evening engagement tweet
-7:00 PM  — Checks analytics (follower growth, engagement)
-8:00 PM  — Sends Abdul daily WhatsApp report
-9:00 PM  — Saves learning data (what worked, what didn't)
-```
-
-### Weekly Lifecycle
-
-```
-Monday    — Write & publish blog post, create 2 images
-Tuesday   — Write YouTube script, send to Abdul
-Wednesday — Create short video (automated), hunt 5 leads
-Thursday  — Send 10 cold emails, create infographic
-Friday    — Weekly analytics report to Abdul on WhatsApp
-Saturday  — Abdul records YouTube video (script ready)
-Sunday    — OpenClaw reviews week's data, updates strategy
-```
-
----
-
-## Your Daily Routine (Phone Only)
-
-| Time | What You Do | Where |
-|------|------------|-------|
-| Morning | Read OpenClaw's overnight summary | WhatsApp |
-| Afternoon | Approve any flagged content | WhatsApp |
-| Evening | Read daily report, reply to hot leads | WhatsApp |
-| Saturday | Record 1 YouTube video (script on WhatsApp) | Phone camera |
-
-**Total time: 15 min/day + 30 min on Saturday**
-
----
-
-## Setup Timeline
-
-| Day | Task | Who Does It |
-|-----|------|------------|
-| Day 1 | Create Google Cloud VM, install everything | Claude Code guides you |
-| Day 1 | Install OpenClaw + skills on VM | Claude Code guides you |
-| Day 1 | Connect WhatsApp to cloud OpenClaw | You (follow guide) |
-| Day 2 | Create social media accounts | You (one-time, 30 min) |
-| Day 2 | Log into each platform via OpenClaw browser | You (one-time, 10 min) |
-| Day 3 | Start autopilot, OpenClaw begins posting | OpenClaw |
-| Day 7 | First weekly report | OpenClaw → WhatsApp |
-| Day 30 | First monthly review | OpenClaw → WhatsApp |
+| Time (Morocco) | What BLAI Does |
+|----------------|---------------|
+| 8:00 AM | Create content: 3 tweets + 1 LinkedIn post → send to Abdul |
+| 10:00 AM | Answer 2 Quora questions, comment on 3 Reddit threads |
+| 12:00 PM | Hunt for leads → send lead report to Abdul |
+| 2:00 PM | Post afternoon content with images |
+| 5:00 PM | Respond to all comments and mentions |
+| 8:00 PM | Send daily report to everyone on WhatsApp |
+| 10:00 PM | Self-improvement: analyze what worked, update memory |
 
 ---
 
@@ -401,42 +248,68 @@ Sunday    — OpenClaw reviews week's data, updates strategy
 
 | Item | Monthly Cost |
 |------|-------------|
-| Google Cloud VM (e2-medium) | $25 (FREE first 12 months with $300 credit) |
-| OpenClaw | Free (open source) |
-| Claude/GPT API (for content) | ~$5-10 (or use free tiers) |
-| All social media accounts | Free |
-| Domain (blacklayers.ca) | Already have it |
-| **Total Year 1** | **$0 (using Google credits)** |
-| **Total Year 2+** | **~$30-35/month** |
+| Google Cloud VM (e2-medium) | $0 (free credits, 12 months) |
+| Gemini API | $0 (free tier) |
+| OpenClaw | $0 (open source) |
+| Ollama on Mac | $0 (open source) |
+| Social media accounts | $0 (all free) |
+| **TOTAL** | **$0** |
+
+After free credits expire (Month 13+): **~$25/month**
 
 ---
 
-## What Makes This Special
+## Future Upgrades Path
 
-| Traditional Digital Marketing | Your Setup |
-|------------------------------|-----------|
-| Hire a marketer: $3,000-5,000/month | OpenClaw: $25/month |
-| They work 8 hours/day | OpenClaw works 24/7 |
-| They take vacations | OpenClaw never stops |
-| They forget brand voice | OpenClaw has perfect memory |
-| They manage 2-3 platforms | OpenClaw manages ALL platforms |
-| They create content manually | OpenClaw auto-generates everything |
-| They send reports when asked | OpenClaw reports daily on WhatsApp |
+| When | What | Cost |
+|------|------|------|
+| **Now** | Gemini free + Mac Qwen fallback | $0 |
+| **When profitable** | Buy Mac Mini M4 — dedicated AI server at home | ~$600 |
+| **Growing** | Upgrade to Mac Studio M4 — run 70B+ models | ~$2,000-4,000 |
+| **Scaled** | Full independence — no cloud, no APIs, everything local | $0/month |
 
 ---
 
-## Next Steps
+## Server Management Commands
 
-1. **Create Google Cloud account** → console.cloud.google.com (get $300 free credits)
-2. **Tell Claude Code to set up the VM** → I'll give you exact commands
-3. **Create social media accounts** (YouTube, Twitter, Instagram, LinkedIn, Reddit)
-4. **Connect WhatsApp to OpenClaw on the cloud**
-5. **Send the autopilot message**
-6. **Check WhatsApp daily — OpenClaw handles the rest**
+### Check BLAI status
+```bash
+gcloud compute ssh blacklayers-agent --zone=us-central1-a --project=blacklayersai
+export PATH=/home/tonny/.npm-global/bin:$PATH
+openclaw status
+```
+
+### Restart BLAI
+```bash
+systemctl --user restart openclaw-gateway
+```
+
+### View logs
+```bash
+openclaw logs --follow
+```
+
+### Update OpenClaw
+```bash
+openclaw update --yes
+```
+
+### Re-connect WhatsApp (if disconnected)
+```bash
+openclaw channels login --channel whatsapp --verbose
+# Scan QR code with phone
+```
+
+### Update skills
+```bash
+cd ~/blacklayers && git pull
+cp ~/blacklayers/openclaw-skills/*.md ~/.openclaw/skills/
+systemctl --user restart openclaw-gateway
+```
 
 ---
 
-*Plan created: March 31, 2026*
-*Architecture: Google Cloud + OpenClaw + Browser Automation + AI Content Generation*
-*Total cost: $0 for first year*
-*Your time: 15 min/day on WhatsApp*
+*Last updated: April 1, 2026*
+*System: Google Cloud + OpenClaw v2026.3.31 + Gemini (3 models) + Mac Qwen 14B fallback*
+*Agent: BLAI (BlackLayer AI)*
+*Status: LIVE and running 24/7*
