@@ -16,7 +16,7 @@
 | Gateway | Running (systemd, auto-restarts on reboot) |
 | WhatsApp | Connected (+212641503230) |
 | Skills | 10 custom skills installed |
-| Ollama on VM | Running (qwen2.5:14b, glm-4.7-flash, qwen2.5:7b) — auto-starts on boot |
+| Ollama on VM | Running (qwen2.5:1.5b active — fits in 4GB RAM) — auto-starts on boot |
 | Cost | **$0** (using $300 free credits) |
 
 ### Your Mac (Local Backup)
@@ -51,11 +51,15 @@ You/Brother/Wife send WhatsApp message
             ▼
     Try Gemini 2.0 Flash ── Works? ──── ✅ Respond instantly
             │
-            │ ALL 3 rate limited? (very rare)
+            │ Rate limited?
+            ▼
+    Try Gemini 3 Flash ──── Works? ──── ✅ Respond instantly
+            │
+            │ ALL 4 Gemini models limited? (very rare)
             ▼
     Try Ollama on VM ─────── Works? ──── ✅ Respond (CPU, slower)
-    (qwen2.5:14b)            │               Send notification:
-                             │               "⚡ Using VM Ollama"
+    (qwen2.5:1.5b — fits     │               Send notification:
+     in 4GB VM RAM)           │               "⚡ Using VM Ollama"
                              │
                              │ VM Ollama busy/failed?
                              ▼
@@ -162,7 +166,7 @@ ssh -R 11434:localhost:11434 tonny@34.132.116.116
 If your Mac is off, BLAI just retries Gemini after 60 seconds. The 3-model cycle means this is rarely needed.
 
 ### When Does Mac Kick In?
-- Only when ALL 3 Gemini models are rate-limited (rare)
+- Only when ALL 4 Gemini models are rate-limited (rare)
 - Only when Mac is on and Ollama is running
 - BLAI checks Mac availability before routing
 - If Mac is off → auto-retry Gemini in 60 sec
@@ -184,12 +188,23 @@ If your Mac is off, BLAI just retries Gemini after 60 seconds. The 3-model cycle
 | **Gemini 3.1 Pro Preview** | Primary | Instant | Excellent | 15 req/min |
 | **Gemini 2.5 Flash** | Fallback 1 | Instant | Very Good | Separate limit |
 | **Gemini 2.0 Flash** | Fallback 2 | Instant | Good | Separate limit |
+| **Gemini 3 Flash Preview** | Fallback 3 | Instant | Good | Separate limit |
 
-### Local Model (Your Mac — Unlimited)
+### VM Local Model (Emergency Backup)
+
+| Model | Role | Speed | Quality | Limit |
+|-------|------|-------|---------|-------|
+| **Qwen 2.5 1.5B** | VM CPU Fallback | Slow (CPU only) | Basic | **Unlimited** |
+
+> **Note:** The VM has only 4GB RAM. Larger models (14B, 7B) were removed from the fallback chain because they caused OOM crashes. The 1.5B model runs reliably on the VM.
+
+### Mac Local Model (Planned — Not Yet Connected)
 
 | Model | Role | Speed | Quality | Limit |
 |-------|------|-------|---------|-------|
 | **Qwen 2.5 14B** | GPU Fallback | <1 sec (M3 Pro) | Very Good | **Unlimited** |
+
+> **Status:** Mac Ollama is installed and working, but there is no network tunnel (Tailscale) between the VM and Mac yet. This level is not active until Tailscale is set up on both machines.
 
 ### How BLAI Gets Smarter Over Time
 
@@ -316,6 +331,6 @@ systemctl --user restart openclaw-gateway
 ---
 
 *Last updated: April 1, 2026*
-*System: Google Cloud + OpenClaw v2026.3.31 + Gemini (3 models) + Mac Qwen 14B fallback*
+*System: Google Cloud + OpenClaw v2026.3.31 + Gemini (4 models) + VM Qwen 1.5B emergency + Mac Qwen 14B (pending Tailscale)*
 *Agent: BLAI (BlackLayer AI)*
 *Status: LIVE and running 24/7*
