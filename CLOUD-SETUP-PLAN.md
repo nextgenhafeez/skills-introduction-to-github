@@ -16,7 +16,7 @@
 | Gateway | Running (systemd, auto-restarts on reboot) |
 | WhatsApp | Connected (+212641503230) |
 | Skills | 10 custom skills installed |
-| Ollama on VM | **Permanently disabled** (saves memory) |
+| Ollama on VM | Running (qwen2.5:14b, glm-4.7-flash, qwen2.5:7b) — auto-starts on boot |
 | Cost | **$0** (using $300 free credits) |
 
 ### Your Mac (Local Backup)
@@ -53,8 +53,14 @@ You/Brother/Wife send WhatsApp message
             │
             │ ALL 3 rate limited? (very rare)
             ▼
+    Try Ollama on VM ─────── Works? ──── ✅ Respond (CPU, slower)
+    (qwen2.5:14b)            │               Send notification:
+                             │               "⚡ Using VM Ollama"
+                             │
+                             │ VM Ollama busy/failed?
+                             ▼
     ┌─────────────────────────────────────────────┐
-    │  Is Abdul's Mac online?                      │
+    │  Is Abdul's Mac online? (via Tailscale)      │
     │                                              │
     │  YES → Route to Mac's Ollama (Qwen 14B)     │
     │         Respond via GPU, unlimited, fast     │
