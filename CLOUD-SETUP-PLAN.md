@@ -19,13 +19,15 @@
 | Ollama on VM | Running (qwen2.5:1.5b active — fits in 4GB RAM) — auto-starts on boot |
 | Cost | **$0** (using $300 free credits) |
 
-### Your Mac (Local Backup)
+### Your Mac (Local Backup — Connected via Tailscale)
 | Field | Value |
 |-------|-------|
 | Machine | MacBook Pro M3 Pro, 18GB RAM |
-| Ollama | Installed (v0.19.0) |
-| Model | Qwen 2.5 14B (9GB, downloaded) |
-| Status | Sleeping — only runs when needed |
+| Ollama | Running on `0.0.0.0:11434` (open to Tailscale network) |
+| Model | Qwen 2.5 14B (9GB, downloaded) + Gemma3 4B |
+| Tailscale IP | `100.105.165.84` |
+| VM Tailscale IP | `100.117.79.66` |
+| Status | **ACTIVE** — VM can reach Mac's Ollama as final fallback |
 
 ---
 
@@ -63,19 +65,17 @@ You/Brother/Wife send WhatsApp message
                              │
                              │ VM Ollama busy/failed?
                              ▼
-    ┌─────────────────────────────────────────────┐
-    │  Is Abdul's Mac online? (via Tailscale)      │
-    │                                              │
-    │  YES → Route to Mac's Ollama (Qwen 14B)     │
-    │         Respond via GPU, unlimited, fast     │
-    │         Send notification: "⚡ Using local   │
-    │         GPU (Qwen 2.5 14B) — Gemini limit"  │
-    │                                              │
-    │  NO  → Send message to everyone:             │
-    │         "⏳ Rate limit hit. Mac is offline.   │
-    │         Retrying in 60 seconds..."           │
-    │         Then auto-retry after 60 sec         │
-    └─────────────────────────────────────────────┘
+    Try Mac Ollama ──────── Works? ──── ✅ Respond via GPU, fast
+    (qwen2.5:14b via          │               Send notification:
+     Tailscale 100.105.       │               "⚡ Using Mac GPU
+     165.84:11434)            │               (Qwen 2.5 14B)"
+                             │
+                             │ Mac offline/Ollama not running?
+                             ▼
+                    Send message to everyone:
+                    "⏳ All models unavailable.
+                     Retrying in 60 seconds..."
+                    Then auto-retry after 60 sec
 ```
 
 ---
@@ -133,37 +133,27 @@ Tip: This usually resolves within 1-2 minutes.
 
 ## How Local Mac Fallback Works
 
-### Setup (One-time — already done)
+### Setup (Completed)
 1. Ollama installed on Mac ✅
 2. Qwen 2.5 14B downloaded (9GB) ✅
-3. Ollama runs on `localhost:11434` when Mac is on
+3. Ollama runs on `0.0.0.0:11434` with `OLLAMA_ORIGINS=*` ✅
+4. Tailscale installed on both Mac and VM ✅
+5. VM reaches Mac at `http://100.105.165.84:11434` ✅
+6. OpenClaw configured with `mac-ollama` provider ✅
 
-### How Cloud Connects to Mac (When Needed)
+### Tailscale Network
+| Machine | Tailscale IP | Role |
+|---------|-------------|------|
+| Mac (abduls-macbook-pro) | `100.105.165.84` | GPU fallback server |
+| VM (blacklayers-agent) | `100.117.79.66` | Main agent |
 
-**Option A: Tailscale (Recommended — Free)**
-Creates a private network between cloud VM and your Mac.
+### Mac Ollama Persistence
+Ollama auto-starts on login via launchd (`~/Library/LaunchAgents/com.ollama.serve.plist`) with:
+- `OLLAMA_HOST=0.0.0.0` (listen on all interfaces)
+- `OLLAMA_ORIGINS=*` (allow Tailscale connections)
 
-```bash
-# On your Mac:
-brew install tailscale
-tailscale up
-
-# On cloud VM:
-tailscale up
-# Now VM can reach Mac at its Tailscale IP
-```
-
-Once connected, the cloud VM can reach your Mac's Ollama at `http://<mac-tailscale-ip>:11434`. BLAI auto-switches when Gemini is limited.
-
-**Option B: SSH Tunnel**
-```bash
-# On your Mac (run when you want to enable fallback):
-ssh -R 11434:localhost:11434 tonny@34.132.116.116
-# This exposes your Mac's Ollama to the cloud VM
-```
-
-**Option C: Mac Off = No Fallback**
-If your Mac is off, BLAI just retries Gemini after 60 seconds. The 3-model cycle means this is rarely needed.
+### If Mac is Off
+If your Mac is off or Ollama isn't running, BLAI retries Gemini after 60 seconds. The 4-model Gemini cycle means the Mac fallback is rarely needed.
 
 ### When Does Mac Kick In?
 - Only when ALL 4 Gemini models are rate-limited (rare)
@@ -198,13 +188,13 @@ If your Mac is off, BLAI just retries Gemini after 60 seconds. The 3-model cycle
 
 > **Note:** The VM has only 4GB RAM. Larger models (14B, 7B) were removed from the fallback chain because they caused OOM crashes. The 1.5B model runs reliably on the VM.
 
-### Mac Local Model (Planned — Not Yet Connected)
+### Mac Local Model (Connected via Tailscale)
 
 | Model | Role | Speed | Quality | Limit |
 |-------|------|-------|---------|-------|
 | **Qwen 2.5 14B** | GPU Fallback | <1 sec (M3 Pro) | Very Good | **Unlimited** |
 
-> **Status:** Mac Ollama is installed and working, but there is no network tunnel (Tailscale) between the VM and Mac yet. This level is not active until Tailscale is set up on both machines.
+> **Status:** ACTIVE. Tailscale connects VM (`100.117.79.66`) to Mac (`100.105.165.84`). VM reaches Mac's Ollama at `http://100.105.165.84:11434`. Tested and working.
 
 ### How BLAI Gets Smarter Over Time
 
@@ -331,6 +321,6 @@ systemctl --user restart openclaw-gateway
 ---
 
 *Last updated: April 1, 2026*
-*System: Google Cloud + OpenClaw v2026.3.31 + Gemini (4 models) + VM Qwen 1.5B emergency + Mac Qwen 14B (pending Tailscale)*
+*System: Google Cloud + OpenClaw v2026.3.31 + Gemini (4 models) + VM Qwen 1.5B + Mac Qwen 14B via Tailscale*
 *Agent: BLAI (BlackLayer AI)*
 *Status: LIVE and running 24/7*
