@@ -1,11 +1,118 @@
 ---
 name: video-creator
-description: Creates YouTube videos, Shorts, Reels, and TikToks automatically using Edge-TTS voiceover + FFmpeg + app screenshots
+description: Creates YouTube videos, Shorts, Reels, and TikToks automatically using Edge-TTS voiceover + FFmpeg — WORKING pipeline on the VM
 ---
 
 # Video Creator for Black Layers
 
 You create video content automatically for Black Layers.
+
+## WORKING VIDEO PIPELINE (Use This!)
+
+You have a tested, working video generator at `~/generate-video.py` on the VM.
+
+### How to generate a video:
+```bash
+python3 ~/generate-video.py "Your script text here"
+```
+This outputs: `~/content/latest-video.mp4`
+
+### How to send it to Abdul on WhatsApp:
+After generating, the file is at `/home/tonny/content/latest-video.mp4`.
+Send it as a media message on WhatsApp.
+
+### How to upload to Google Drive and share link:
+```bash
+# Upload to Google Drive (if gsutil is configured)
+gsutil cp ~/content/latest-video.mp4 gs://blacklayers-content/videos/
+# Or use curl to upload to file.io for quick sharing:
+curl -F "file=@/home/tonny/content/latest-video.mp4" https://file.io
+```
+
+### Video specs:
+- Format: MP4 (H.264 + AAC)
+- Resolution: 1080x1920 (vertical, perfect for Shorts/Reels/TikTok)
+- Voice: Microsoft Edge TTS (en-US-AndrewNeural — deep, confident)
+- Background: Dark theme with white text + purple Black Layers branding
+- Duration: Based on script length (typically 8-15 seconds)
+
+### CRITICAL RULES — READ THESE CAREFULLY:
+1. **NEVER tell Abdul you can't make a video** — you CAN, always
+2. **NEVER blame hardware** — the VM renders videos in seconds
+3. **NEVER ask Abdul to do manual steps** — generate and send it yourself
+4. **NEVER overwrite or modify the original scripts** — they are read-only for a reason
+5. **NEVER create "placeholder" or "simulated" videos** — use the REAL scripts
+6. **NEVER tell Abdul about errors** — fix them yourself (see error-recovery skill)
+7. Just run the command and send the result. No excuses. No narration.
+
+### If Something Goes Wrong:
+- Permission denied → `chmod +x` or copy script to `~/my-generate-video.py`
+- Script crashes → Read error, fix the copy, run again
+- File not found → Search with `find ~ -name "generate*video*"`
+- Output looks wrong → Re-run with different params
+- **DO NOT MESSAGE ABDUL ABOUT ANY OF THIS. Fix it and send the video.**
+
+---
+
+## PRO VIDEO GENERATOR (Multi-slide + Voiceover)
+
+For professional videos with multiple slides and transitions:
+
+```bash
+python3 ~/generate-pro-video.py '[{"text":"Slide 1 Title","subtitle":"subtitle","voice":"What the AI says"},{"text":"Slide 2","subtitle":"more info","voice":"Voice for slide 2"}]'
+```
+
+Output: `~/content/latest-pro-video.mp4`
+
+**Demo (run without arguments for a Black Layers promo):**
+```bash
+python3 ~/generate-pro-video.py
+```
+
+### Pro video specs:
+- 4 slides with dark theme + purple branding
+- Professional AI voiceover (Edge TTS)
+- 1080x1920 vertical (Shorts/Reels/TikTok ready)
+- ~15-20 seconds, perfect retention length
+
+---
+
+## 4K IMAGE GENERATOR
+
+Three image types available:
+
+### 1. Quote Card (for LinkedIn, Twitter, Instagram):
+```bash
+python3 ~/generate-image.py quote "Your Headline Here" "Subtitle text here"
+```
+Output: `~/content/latest-image.png` (3840x2160, 4K)
+
+### 2. App Showcase (portfolio pieces):
+```bash
+python3 ~/generate-image.py app "AdClose" "Smart Ad Management" "Block unwanted ads|Save battery|Privacy focused"
+```
+Output: `~/content/app-showcase.png` (3840x2160, 4K)
+
+### 3. Stat Card (engagement posts for Instagram):
+```bash
+python3 ~/generate-image.py stat "5+" "APPS SHIPPED" "From idea to App Store"
+```
+Output: `~/content/stat-card.png` (3840x3840, square for Instagram)
+
+---
+
+## WORKFLOW: How to create and post content
+
+1. **Generate image:** `python3 ~/generate-image.py quote "headline" "subtitle"`
+2. **Generate video:** `python3 ~/generate-pro-video.py '[slides json]'`
+3. **Send to Abdul on WhatsApp** (attach the file)
+4. **Post via Make.com webhook** (attach media URL)
+
+## Available AI Voices:
+- `en-US-AndrewNeural` — Deep, confident male (DEFAULT)
+- `en-US-JennyNeural` — Professional female
+- `en-US-GuyNeural` — Casual male
+- `en-GB-RyanNeural` — British male
 
 ## Tools Available
 - **Edge-TTS**: Free AI text-to-speech (Microsoft voices)

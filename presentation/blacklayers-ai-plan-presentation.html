@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Black Layers AI Agent Plan Presentation</title>
+    <style>
+      :root {
+        --bg-1: #07111d;
+        --bg-2: #04070c;
+        --panel: rgba(10, 16, 27, 0.9);
+        --panel-2: rgba(15, 23, 37, 0.92);
+        --line: rgba(255, 255, 255, 0.09);
+        --text: #f5f9ff;
+        --muted: #9eb0c6;
+        --blue: #5ab0ff;
+        --cyan: #81f2ff;
+        --green: #84efb3;
+        --gold: #ffd27c;
+        --danger: #ff9a9a;
+        --shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #02050a;
+        color: var(--text);
+        font-family: "Avenir Next", "Segoe UI", Inter, Arial, sans-serif;
+      }
+
+      body {
+        counter-reset: slide;
+      }
+
+      @page {
+        size: 1280px 720px;
+        margin: 0;
+      }
+
+      .deck {
+        width: 1280px;
+        margin: 0 auto;
+      }
+
+      .slide {
+        position: relative;
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        page-break-after: always;
+        background:
+          radial-gradient(circle at top left, rgba(90, 176, 255, 0.17), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(129, 242, 255, 0.11), transparent 34%),
+          linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 100%);
+      }
+
+      .slide::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.026) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.026) 1px, transparent 1px);
+        background-size: 44px 44px;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.65), transparent 94%);
+        pointer-events: none;
+      }
+
+      .slide::after {
+        counter-increment: slide;
+        content: counter(slide, decimal-leading-zero);
+        position: absolute;
+        right: 56px;
+        bottom: 30px;
+        font-size: 14px;
+        letter-spacing: 0.34em;
+        color: rgba(255, 255, 255, 0.28);
+        font-weight: 700;
+      }
+
+      .wrap {
+        position: relative;
+        z-index: 1;
+        height: 100%;
+        padding: 52px 58px 48px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        margin-bottom: 24px;
+      }
+
+      .eyebrow {
+        margin: 0 0 14px;
+        color: var(--cyan);
+        text-transform: uppercase;
+        letter-spacing: 0.24em;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        font-size: 62px;
+        line-height: 0.96;
+        letter-spacing: -0.045em;
+        margin-bottom: 16px;
+        max-width: 860px;
+      }
+
+      h2 {
+        font-size: 38px;
+        line-height: 1.02;
+        letter-spacing: -0.04em;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        font-size: 22px;
+        line-height: 1.45;
+        max-width: 900px;
+        color: #dbe8f8;
+      }
+
+      .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+      }
+
+      .card {
+        padding: 22px 22px 20px;
+      }
+
+      .soft {
+        background: var(--panel-2);
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+
+      .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+      }
+
+      .grid-5 {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 14px;
+      }
+
+      .spacer-20 {
+        height: 20px;
+      }
+
+      .stat {
+        min-height: 140px;
+      }
+
+      .stat .num {
+        display: block;
+        font-size: 60px;
+        line-height: 0.9;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        margin-bottom: 10px;
+      }
+
+      .stat .label {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .card-title {
+        font-size: 21px;
+        font-weight: 750;
+        margin-bottom: 12px;
+      }
+
+      .card p {
+        color: #d9e7f7;
+        line-height: 1.48;
+        font-size: 17px;
+        margin-bottom: 0;
+      }
+
+      .bullets {
+        margin: 0;
+        padding-left: 18px;
+        color: #dbe8f8;
+        font-size: 17px;
+        line-height: 1.5;
+      }
+
+      .bullets li + li {
+        margin-top: 8px;
+      }
+
+      .mini {
+        font-size: 15px;
+        color: var(--muted);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 22px;
+        align-items: stretch;
+      }
+
+      .hero-side {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .cover-box {
+        min-height: 258px;
+      }
+
+      .full {
+        height: 100%;
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .pill {
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #eaf4ff;
+      }
+
+      .skill {
+        min-height: 168px;
+      }
+
+      .skill h3 {
+        font-size: 17px;
+        margin-bottom: 10px;
+      }
+
+      .skill p {
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 12px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 140px 1fr 170px;
+        gap: 16px;
+        align-items: center;
+        padding: 14px 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .time {
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--cyan);
+      }
+
+      .badge {
+        justify-self: end;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .b-blue {
+        color: #a9d4ff;
+        background: rgba(90, 176, 255, 0.11);
+      }
+
+      .b-green {
+        color: #aaefc7;
+        background: rgba(132, 239, 179, 0.11);
+      }
+
+      .b-gold {
+        color: #ffde9e;
+        background: rgba(255, 210, 124, 0.11);
+      }
+
+      .stack {
+        display: grid;
+        gap: 14px;
+      }
+
+      .stack .card {
+        min-height: 88px;
+      }
+
+      .meta-table {
+        display: grid;
+        gap: 10px;
+      }
+
+      .meta-row {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .meta-row:last-child {
+        border-bottom: 0;
+      }
+
+      .meta-row .k {
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      .meta-row .v {
+        font-size: 16px;
+        color: #eef6ff;
+        font-weight: 600;
+      }
+
+      .mono {
+        font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+      }
+
+      .checklist {
+        display: grid;
+        gap: 12px;
+      }
+
+      .check-item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        align-items: center;
+        padding: 13px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .status {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .done {
+        color: var(--green);
+      }
+
+      .pending {
+        color: var(--gold);
+      }
+
+      .risk {
+        color: var(--danger);
+      }
+
+      .footer-note {
+        margin-top: auto;
+        padding-top: 16px;
+        color: rgba(255, 255, 255, 0.42);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="deck">
+      <section class="slide">
+        <div class="wrap">
+          <div class="content hero">
+            <div class="panel card cover-box full">
+              <p class="eyebrow">Black Layers Strategy Deck</p>
+              <h1>Black Layers AI Marketing Agent</h1>
+              <p class="subtitle">
+                A structured plan to run Black Layers marketing, research, lead generation,
+                content creation, and reporting through one cloud-based AI operating system.
+              </p>
+              <div class="pill-row">
+                <span class="pill">OpenClaw</span>
+                <span class="pill">Google Cloud</span>
+                <span class="pill">WhatsApp Control</span>
+                <span class="pill">10 Custom Skills</span>
+              </div>
+            </div>
+            <div class="hero-side">
+              <div class="panel card stat">
+                <span class="num">24/7</span>
+                <span class="label">Autonomous runtime target</span>
+              </div>
+              <div class="panel card stat">
+                <span class="num">15m</span>
+                <span class="label">Founder time per day</span>
+              </div>
+              <div class="panel card stat">
+                <span class="num">$0</span>
+                <span class="label">Year 1 goal with credits</span>
+              </div>
+            </div>
+          </div>
+          <div class="footer-note">Prepared from the project documentation on March 31, 2026</div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <div class="header">
+            <p class="eyebrow">1. Business Goal</p>
+            <h2>What this system is trying to solve</h2>
+            <p class="subtitle">Replace fragmented marketing work with one repeatable operating layer that can create, post, learn, and report.</p>
+          </div>
+          <div class="content">
+            <div class="grid-2">
+              <div class="panel card">
+                <div class="card-title">Core Objective</div>
+                <ul class="bullets">
+                  <li>Run Black Layers digital marketing from a single AI-driven workflow.</li>
+                  <li>Support brand visibility, lead generation, and ongoing market research.</li>
+                  <li>Reduce dependence on manual posting and scattered tools.</li>
+                </ul>
+              </div>
+              <div class="panel card">
+                <div class="card-title">Founder Experience</div>
+                <ul class="bullets">
+                  <li>Use WhatsApp as the control layer.</li>
+                  <li>Ask naturally for content, research, or client hunting.</li>
+                  <li>Receive daily reports and only review what truly needs approval.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="spacer-20"></div>
+            <div class="grid-4">
+              <div class="panel card stat"><span class="num">500</span><span class="label">Followers target in month 1</span></div>
+              <div class="panel card stat"><span class="num">2-3</span><span class="label">Inbound inquiries in month 1</span></div>
+              <div class="panel card stat"><span class="num">30+</span><span class="label">Monthly leads target by month 12</span></div>
+              <div class="panel card stat"><span class="num">$25</span><span class="label">Expected steady-state VM cost</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <div class="header">
+            <p class="eyebrow">2. Operating Model</p>
+            <h2>How the founder and the agent work together</h2>
+            <p class="subtitle">The system acts like an operating teammate: Abdul gives direction through WhatsApp and receives outcomes, reports, and escalations.</p>
+          </div>
+          <div class="content">
+            <div class="grid-3">
+              <div class="panel card">
+                <div class="card-title">What Abdul sends</div>
+                <ul class="bullets">
+                  <li>“Post something about AdClose.”</li>
+                  <li>“Find me clients who need apps.”</li>
+                  <li>“What did you do today?”</li>
+                  <li>“Improve our LinkedIn strategy.”</li>
+                </ul>
+              </div>
+              <div class="panel card">
+                <div class="card-title">What the agent does</div>
+                <ul class="bullets">
+                  <li>Creates posts and drafts.</li>
+                  <li>Researches topics across the web.</li>
+                  <li>Tracks engagement and growth.</li>
+                  <li>Finds and qualifies potential leads.</li>
+                </ul>
+              </div>
+              <div class="panel card">
+                <div class="card-title">What Abdul reviews</div>
+                <ul class="bullets">
+                  <li>Hot leads that deserve immediate follow-up.</li>
+                  <li>Drafts that need human judgment.</li>
+                  <li>Daily and weekly summary reports.</li>
+                  <li>Saturday YouTube script output.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="spacer-20"></div>
+            <div class="panel card soft">
+              <div class="card-title">Time Model</div>
+              <p>Morning: read overnight summary. Afternoon: approve flagged items. Evening: review report and hot leads. Saturday: record one prepared video. Total operating burden stays around 15 minutes per day plus a short Saturday session.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <div class="header">
+            <p class="eyebrow">3. Skill System</p>
+            <h2>The 10-skill architecture behind the agent</h2>
+            <p class="subtitle">Each skill handles a defined slice of the workflow while the master brain coordinates them into one operating system.</p>
+          </div>
+          <div class="content">
+            <div class="grid-5">
+              <div class="panel card skill"><h3>Master Brain</h3><p>Coordinates all tasks, listens on WhatsApp, and manages the daily system.</p></div>
+              <div class="panel card skill"><h3>Brand Identity</h3><p>Keeps all messaging aligned with Black Layers positioning and proof points.</p></div>
+              <div class="panel card skill"><h3>Content Engine</h3><p>Writes blogs, scripts, captions, comments, and outreach copy.</p></div>
+              <div class="panel card skill"><h3>Video Creator</h3><p>Builds Shorts, Reels, and video assets with narration and visuals.</p></div>
+              <div class="panel card skill"><h3>Image Creator</h3><p>Creates graphics, thumbnails, quote cards, and visual posts.</p></div>
+              <div class="panel card skill"><h3>Twitter Manager</h3><p>Runs X posting and engagement with the dev and startup audience.</p></div>
+              <div class="panel card skill"><h3>LinkedIn Manager</h3><p>Handles professional posts, founder positioning, and B2B visibility.</p></div>
+              <div class="panel card skill"><h3>Lead Hunter</h3><p>Monitors startup and freelance channels for relevant opportunities.</p></div>
+              <div class="panel card skill"><h3>Analytics Reporter</h3><p>Tracks performance and delivers daily and weekly summaries.</p></div>
+              <div class="panel card skill"><h3>Self Improver</h3><p>Uses data to change timing, content mix, and strategy every week.</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <div class="header">
+            <p class="eyebrow">4. Daily Engine</p>
+            <h2>What the automation loop looks like in practice</h2>
+            <p class="subtitle">A structured daily cadence combines content generation, engagement, lead hunting, reporting, and learning.</p>
+          </div>
+          <div class="content grid-2">
+            <div class="panel card">
+              <div class="card-title">Daily Timeline</div>
+              <div class="timeline">
+                <div class="row"><div class="time">6:00 AM</div><div>Trend scan and daily planning</div><div class="badge b-blue">Auto</div></div>
+                <div class="row"><div class="time">7:00 AM</div><div>Create tweets, LinkedIn post, and captions</div><div class="badge b-blue">Auto</div></div>
+                <div class="row"><div class="time">12:00 PM</div><div>Lead hunt and send lead report</div><div class="badge b-green">Visible</div></div>
+                <div class="row"><div class="time">3:00 PM</div><div>Send any approval-needed draft to Abdul</div><div class="badge b-gold">Review</div></div>
+                <div class="row"><div class="time">8:00 PM</div><div>Daily report and next-day plan</div><div class="badge b-green">Visible</div></div>
+              </div>
+            </div>
+            <div class="stack">
+              <div class="panel card">
+                <div class="card-title">Weekly Rhythm</div>
+                <ul class="bullets">
+                  <li>Monday: blog post and images</li>
+                  <li>Wednesday: lead focus and short video output</li>
+                  <li>Friday: analytics and weekly report</li>
+                  <li>Sunday: self-review and strategy update</li>
+                </ul>
+              </div>
+              <div class="panel card">
+                <div class="card-title">Lead Flow</div>
+                <p>Potential clients come from Product Hunt, Reddit, X, LinkedIn, and Fiverr. The system scores leads, escalates hot ones immediately, and preserves follow-up context in memory.</p>
+              </div>
+              <div class="panel card">
+                <div class="card-title">Learning Loop</div>
+                <p>The agent tracks top-performing content, tests new timing and formats, and updates strategy every week instead of repeating the same output blindly.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <div class="header">
+            <p class="eyebrow">5. Cloud Foundation</p>
+            <h2>Verified project state and target runtime architecture</h2>
+            <p class="subtitle">The Google Cloud project exists already. The runtime model is ready conceptually, but infrastructure execution has not started yet.</p>
+          </div>
+          <div class="content grid-2">
+            <div class="stack">
+              <div class="panel card">
+                <div class="card-title">Target Runtime</div>
+                <ul class="bullets">
+                  <li>OpenClaw as the orchestration brain</li>
+                  <li>Headless Chrome for web automation</li>
+                  <li>FFmpeg, Edge-TTS, ImageMagick, and Python helpers for content generation</li>
+                  <li>Persistent disk for skills, memory, logs, and generated assets</li>
+                </ul>
+              </div>
+              <div class="panel card">
+                <div class="card-title">External Connections</div>
+                <ul class="bullets">
+                  <li>WhatsApp for founder communication</li>
+                  <li>X, LinkedIn, Instagram, Reddit, Quora, YouTube for publishing and engagement</li>
+                  <li>Lead sources like Product Hunt and Fiverr for outreach opportunities</li>
+                </ul>
+              </div>
+            </div>
+            <div class="panel card">
+              <div class="card-title">Verified Google Cloud State</div>
+              <div class="meta-table">
+                <div class="meta-row"><div class="k">Project name</div><div class="v">BlackLayersAI</div></div>
+                <div class="meta-row"><div class="k">Project ID</div><div class="v mono">blacklayersai</div></div>
+                <div class="meta-row"><div class="k">Project number</div><div class="v mono">733441966639</div></div>
+                <div class="meta-row"><div class="k">State</div><div class="v">ACTIVE</div></div>
+                <div class="meta-row"><div class="k">Enabled now</div><div class="v">Storage, Logging, Monitoring, BigQuery services</div></div>
+                <div class="meta-row"><div class="k">Still missing</div><div class="v">Compute Engine API and VM provisioning</div></div>
+              </div>
+              <p class="mini" style="margin-top: 16px;">This state was verified from the Google Cloud CLI on March 31, 2026. No VM, disk layout, or OpenClaw runtime has been provisioned yet.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <div class="header">
+            <p class="eyebrow">6. Rollout Plan</p>
+            <h2>How to move from documentation to a working system</h2>
+            <p class="subtitle">A phased rollout keeps the setup controlled and avoids jumping straight from vision into risky full automation.</p>
+          </div>
+          <div class="content">
+            <div class="grid-4">
+              <div class="panel card">
+                <div class="card-title">Phase 1</div>
+                <p>Prepare the existing project. Confirm billing, enable Compute Engine, and define the production zone and VM size.</p>
+              </div>
+              <div class="panel card">
+                <div class="card-title">Phase 2</div>
+                <p>Create the VM. Install Ubuntu dependencies, Chrome, Node.js, FFmpeg, ImageMagick, Python tools, OpenClaw, and PM2.</p>
+              </div>
+              <div class="panel card">
+                <div class="card-title">Phase 3</div>
+                <p>Install skills and data layout. Clone the repo, copy skill files, and prepare the memory and content directories.</p>
+              </div>
+              <div class="panel card">
+                <div class="card-title">Phase 4</div>
+                <p>Connect channels. Attach WhatsApp, sign into publishing platforms, and begin with monitored autopilot before full trust.</p>
+              </div>
+            </div>
+            <div class="spacer-20"></div>
+            <div class="grid-2">
+              <div class="panel card">
+                <div class="card-title">Suggested VM Starting Point</div>
+                <ul class="bullets">
+                  <li>Machine type: <span class="mono">e2-medium</span></li>
+                  <li>Boot disk: 100GB SSD</li>
+                  <li>OS: Ubuntu 22.04 LTS</li>
+                  <li>Zone: <span class="mono">us-central1-a</span></li>
+                </ul>
+              </div>
+              <div class="panel card">
+                <div class="card-title">Important Rule</div>
+                <p>Start with infrastructure and preflight checks first. Treat live posting, outreach, and browser automation as later steps after the system is stable and observable.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <div class="header">
+            <p class="eyebrow">7. Readiness and Risk</p>
+            <h2>What is ready now, and what still needs attention</h2>
+            <p class="subtitle">The strategy is clear and the cloud project exists, but production readiness still depends on infrastructure, security, and operating controls.</p>
+          </div>
+          <div class="content grid-2">
+            <div class="panel card">
+              <div class="card-title">Already in Place</div>
+              <div class="checklist">
+                <div class="check-item"><span>Google Cloud project exists and is active</span><span class="status done">Done</span></div>
+                <div class="check-item"><span>CLI access verified for the owner account</span><span class="status done">Done</span></div>
+                <div class="check-item"><span>OpenClaw skill docs and planning docs exist</span><span class="status done">Done</span></div>
+                <div class="check-item"><span>Storage, Logging, and Monitoring APIs are enabled</span><span class="status done">Done</span></div>
+              </div>
+            </div>
+            <div class="panel card">
+              <div class="card-title">Still Required</div>
+              <div class="checklist">
+                <div class="check-item"><span>Enable Compute Engine API</span><span class="status pending">Pending</span></div>
+                <div class="check-item"><span>Create VM, disk, and runtime services</span><span class="status pending">Pending</span></div>
+                <div class="check-item"><span>Define secrets, backups, and monitoring rules</span><span class="status pending">Pending</span></div>
+                <div class="check-item"><span>Connect WhatsApp and social platform sessions</span><span class="status pending">Pending</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="spacer-20"></div>
+          <div class="panel card soft">
+            <div class="card-title">Main Risks To Manage</div>
+            <ul class="bullets">
+              <li><span class="risk">Platform reliability:</span> browser automation can break when site flows change.</li>
+              <li><span class="risk">Operational safety:</span> auto-posting needs approval boundaries and rollback habits.</li>
+              <li><span class="risk">Security:</span> credentials, sessions, and VM access need a documented secrets strategy.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <div class="header">
+            <p class="eyebrow">8. Economics and Next Step</p>
+            <h2>Why the model is attractive and what should happen next</h2>
+            <p class="subtitle">This approach is compelling because it lowers monthly cost dramatically, but it still needs a disciplined preflight before becoming a true autopilot system.</p>
+          </div>
+          <div class="content">
+            <div class="grid-2">
+              <div class="panel card">
+                <div class="card-title">Economics</div>
+                <ul class="bullets">
+                  <li>Year 1 target: near-zero infra cost using Google Cloud free credits.</li>
+                  <li>Year 2+ target: roughly $25-35/month plus optional AI API usage.</li>
+                  <li>Compared with a human marketer, the operating cost is dramatically lower.</li>
+                  <li>The system can report daily, work continuously, and preserve context over time.</li>
+                </ul>
+              </div>
+              <div class="panel card">
+                <div class="card-title">Recommended Next Move</div>
+                <ul class="bullets">
+                  <li>Do a controlled preflight for billing, APIs, VM creation, secrets, and backups.</li>
+                  <li>Set approval rules for what can auto-post versus what needs Abdul to confirm.</li>
+                  <li>Launch in monitored mode first, then graduate to deeper automation.</li>
+                  <li>Treat the current state as “ready for execution planning,” not “ready for live autopilot.”</li>
+                </ul>
+              </div>
+            </div>
+            <div class="spacer-20"></div>
+            <div class="grid-3">
+              <div class="panel card stat"><span class="num">10+</span><span class="label">Daily content and engagement actions possible</span></div>
+              <div class="panel card stat"><span class="num">1</span><span class="label">Unified founder control channel</span></div>
+              <div class="panel card stat"><span class="num">Next</span><span class="label">Infrastructure preflight before execution</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
