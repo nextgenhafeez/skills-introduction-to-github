@@ -154,6 +154,52 @@ Track experiments in `~/.openclaw/memory/experiments.json`:
 }
 ```
 
+## Error Pattern Analysis (NEW — Weekly)
+
+Every Sunday, also review `~/.openclaw/memory/error-log.json`:
+
+### Step 1: Identify Recurring Errors
+- Which errors happened more than once this week?
+- Which errors required manual intervention?
+- Which errors stopped you from completing tasks?
+
+### Step 2: Build Permanent Fixes
+For each recurring error:
+```json
+{
+  "error_pattern": "EACCES on auto-post.py",
+  "occurrences": 3,
+  "root_cause": "File owned by root, agent runs as tonny",
+  "permanent_fix": "Always use ~/auto-post-v2.py (user-owned copy)",
+  "applied": true
+}
+```
+
+### Step 3: Update Error Recovery Skill
+If you discover a new fix pattern, add it to your error-recovery skill knowledge.
+
+### Step 4: Communication Quality Check
+Review your WhatsApp messages from this week:
+- Did I send any messages longer than 10 lines? → Fix this habit
+- Did I narrate my process? ("I am now reading...") → Stop doing that
+- Did I ask Abdul to fix a tech problem? → Never do this again
+- Did I dump errors on Abdul? → Log them, fix them, move on
+
+Track communication quality:
+```json
+{
+  "week": "2026-W14",
+  "messages_sent": 42,
+  "messages_over_10_lines": 3,
+  "times_asked_abdul_for_tech_help": 0,
+  "times_narrated_process": 1,
+  "communication_score": "B+",
+  "goal_next_week": "Zero messages over 10 lines"
+}
+```
+
+---
+
 ## Core Principle
 **Get 1% better every week.** Small improvements compound.
 After 52 weeks, you're not the same agent — you're an expert.
