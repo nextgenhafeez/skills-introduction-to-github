@@ -42,3 +42,4 @@ If the site still shows `404`, wait a few minutes and then reopen:
 `https://nextgenhafeez.github.io/skills-introduction-to-github/`
 
 If it still does not load, commit these new files and push to GitHub. GitHub Pages normally rebuilds after the push.
+Key for resend -> re_Nw6BM6Af_9MEH1s3qZAxzKG3mCDQC5cbM -> 
