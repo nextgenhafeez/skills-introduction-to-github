@@ -102,3 +102,58 @@ Save all created images to `~/.openclaw/content/images/` with naming:
 YYYY-MM-DD_platform_type.png
 Example: 2026-03-31_twitter_quote-card.png
 ```
+
+## Triggers
+- "create an image", "make a graphic", "design a post"
+- "thumbnail for", "quote card for", "infographic"
+- Any request involving visual content creation
+- Daily schedule triggers (see Daily Image Tasks above)
+
+## API Integration
+
+### Primary: Flux 2 Schnell (Free via Replicate)
+```python
+import requests
+
+REPLICATE_TOKEN = "your_token"
+response = requests.post(
+    "https://api.replicate.com/v1/predictions",
+    headers={"Authorization": f"Token {REPLICATE_TOKEN}"},
+    json={
+        "version": "flux-schnell",
+        "input": {
+            "prompt": "Dark minimal tech graphic for Black Layers, blue accent #2563EB, clean sans-serif, 1200x675",
+            "width": 1200,
+            "height": 675
+        }
+    }
+)
+```
+
+### Fallback Chain
+1. Flux 2 Schnell (Replicate) — free tier
+2. Recraft V4 API — best for logos/brand assets
+3. ImageMagick CLI — always available, no API needed
+4. Canva browser automation — last resort (slow)
+
+## Error Handling
+| Error | Fix |
+|-------|-----|
+| Replicate API rate limit | Switch to Recraft V4 or ImageMagick |
+| ImageMagick font not found | Use `convert -list font` to find available fonts |
+| Image too large (>5MB) | Compress: `convert input.png -quality 85 output.png` |
+| Canva browser session expired | Re-login, clear cookies, retry |
+| Wrong dimensions | Always verify with `identify image.png` before posting |
+| API key expired | Check `~/.openclaw/secrets/` and refresh key |
+
+## Output Format
+After creating any image, report:
+```
+IMAGE CREATED:
+- File: ~/.openclaw/content/images/YYYY-MM-DD_platform_type.png
+- Size: [dimensions] ([file size])
+- Platform: [target platform]
+- Type: [quote card / showcase / thumbnail / etc.]
+- Method: [Flux API / ImageMagick / Canva]
+- Status: Ready to post / Needs review
+```

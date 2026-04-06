@@ -162,3 +162,107 @@ High risk/reward: Meme coins, new launches
 - When unsure, say "I need to study this more" — never guess
 - Track your predictions vs actual outcomes to improve
 - Report both bullish AND bearish scenarios — never be one-sided
+
+## Triggers
+- cron: "0 8 * * *" (daily morning scan at 8 AM)
+- cron: "0 10 * * 0" (weekly deep dive every Sunday 10 AM)
+- "crypto update", "BTC price", "market scan"
+- "what's happening in crypto", "any trading opportunities"
+
+## Automated Morning Scan Script
+```python
+#!/usr/bin/env python3
+"""Daily crypto market scan — collects prices, sentiment, and news."""
+import requests, json, os
+from datetime import datetime
+
+DATE = datetime.now().strftime("%Y-%m-%d")
+
+def morning_scan():
+    report = {"date": DATE, "data": {}}
+
+    # BTC & ETH prices via CoinGecko (free, no API key)
+    r = requests.get("https://api.coingecko.com/api/v3/simple/price",
+        params={"ids": "bitcoin,ethereum,solana,binancecoin", "vs_currencies": "usd", "include_24hr_change": "true"})
+    report["data"]["prices"] = r.json()
+
+    # Fear & Greed Index
+    r = requests.get("https://api.alternative.me/fng/?limit=1")
+    report["data"]["fear_greed"] = r.json()["data"][0]
+
+    # Top gainers (CoinGecko trending)
+    r = requests.get("https://api.coingecko.com/api/v3/search/trending")
+    report["data"]["trending"] = [c["item"]["name"] for c in r.json()["coins"][:5]]
+
+    # Save scan
+    scan_dir = os.path.expanduser("~/.openclaw/memory/crypto-scans")
+    os.makedirs(scan_dir, exist_ok=True)
+    with open(f"{scan_dir}/{DATE}.json", "w") as f:
+        json.dump(report, f, indent=2)
+
+    return report
+```
+
+## Prediction Tracking
+Track accuracy to improve over time:
+```json
+{
+  "predictions": [
+    {
+      "date": "2026-04-05",
+      "prediction": "BTC will test $70K support this week",
+      "timeframe": "7 days",
+      "confidence": "medium",
+      "result": null,
+      "accurate": null
+    }
+  ],
+  "accuracy_rate": "65%",
+  "total_predictions": 20,
+  "correct": 13
+}
+```
+
+## Error Handling
+| Error | Fix |
+|-------|-----|
+| CoinGecko API rate limited | Use CoinMarketCap API as backup, or cache last data |
+| Fear & Greed API down | Calculate manually from BTC volatility + volume |
+| Browser can't load TradingView | Use API data only, skip chart screenshots |
+| Scan data seems stale | Verify API response timestamps, force refresh |
+| Boss asks about unfamiliar coin | Research first, never guess — say "I'll look into it" |
+| Market flash crash during scan | Flag urgency, send immediate alert to Boss |
+
+## Report Format
+```
+CRYPTO MORNING SCAN — [DATE]
+
+PRICES:
+- BTC: $[price] ([24h change]%)
+- ETH: $[price] ([24h change]%)
+- SOL: $[price] ([24h change]%)
+- BNB: $[price] ([24h change]%)
+
+SENTIMENT: [Fear & Greed value] — [label]
+TRENDING: [top 5 coins]
+
+ANALYSIS:
+[2-3 sentences on market direction]
+
+OPPORTUNITIES:
+[Any setups matching our strategies]
+
+RISK LEVEL: [Low / Medium / High / Extreme]
+```
+
+## Output Format
+```
+CRYPTO RESEARCH COMPLETE:
+- Type: [Morning Scan / Weekly Deep Dive / Ad-hoc]
+- Data sources: [CoinGecko, Fear&Greed, TradingView, etc.]
+- Coins analyzed: [count]
+- Opportunities found: [count] (risk levels: ...)
+- Predictions made: [count]
+- Prediction accuracy (30-day): [%]
+- Report delivered: [WhatsApp / Saved]
+```

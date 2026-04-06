@@ -126,3 +126,66 @@ Save this for later. ♻️ Repost if it helps someone.
 - Short paragraphs (1-2 lines max)
 - Start with a hook that creates curiosity
 - End with a CTA (visit website, DM, comment)
+
+## Triggers
+- "post on LinkedIn", "LinkedIn update"
+- Daily schedule: 1 post per day (10 AM)
+- "engage on LinkedIn", "LinkedIn comments"
+- When Content Engine produces LinkedIn-ready content
+
+## Analytics Tracking
+After each post, log to `~/.openclaw/memory/linkedin-analytics.json`:
+```json
+{
+  "date": "2026-04-05",
+  "posts": [
+    {
+      "time": "10:00",
+      "text": "first 50 chars...",
+      "template": "case-study",
+      "method": "webhook",
+      "status": "published"
+    }
+  ],
+  "engagement_actions": {
+    "comments_left": 5,
+    "connections_accepted": 3,
+    "welcome_messages_sent": 3
+  },
+  "metrics": {
+    "post_views": 0,
+    "reactions": 0,
+    "comments_received": 0,
+    "new_connections": 0
+  }
+}
+```
+
+## Error Handling
+| Error | Fix |
+|-------|-----|
+| Post rejected (duplicate content) | Rewrite completely — different hook, angle, and CTA |
+| Webhook fails | Switch to browser automation |
+| Browser session expired | Re-login to LinkedIn, clear cookies |
+| Post gets flagged/removed | Review content against LinkedIn TOS, adjust |
+| Connection request limit hit | Stop for 24h, resume next day |
+| Low engagement (< 5 reactions) | Test new hook styles, post at different time |
+
+## A/B Testing
+Track which template types perform best:
+- Case Study posts
+- Founder Story posts
+- Dev Insight posts
+- Question/Poll posts
+
+Every 2 weeks, analyze which template gets most engagement and increase its frequency.
+
+## Output Format
+```
+LINKEDIN REPORT:
+- Posts published: [count]
+- Method: [webhook / browser / pending]
+- Engagement actions: [comments left, connections accepted]
+- Post performance: [views, reactions] (if available)
+- Duplicate issues: [none / rewritten X times]
+```

@@ -148,3 +148,89 @@ Based on data, automatically adjust:
 - **Hashtags**: Use hashtags that drive the most impressions
 - **Platforms**: Focus effort on fastest-growing platform
 - **Topics**: Double down on topics people engage with
+
+## Triggers
+- cron: "0 20 * * *" (daily report at 8 PM)
+- cron: "0 18 * * 5" (weekly report every Friday 6 PM)
+- "how are we doing", "show me analytics", "what's our growth"
+- "engagement report", "performance update"
+
+## API-Based Data Collection
+
+### Twitter API v2
+```python
+import requests
+
+BEARER_TOKEN = "your_twitter_bearer_token"
+headers = {"Authorization": f"Bearer {BEARER_TOKEN}"}
+
+# Get tweet metrics
+response = requests.get(
+    "https://api.twitter.com/2/users/{user_id}/tweets",
+    headers=headers,
+    params={"tweet.fields": "public_metrics", "max_results": 10}
+)
+for tweet in response.json()["data"]:
+    metrics = tweet["public_metrics"]
+    # likes, retweets, replies, impressions
+```
+
+### LinkedIn (browser scrape fallback)
+```bash
+# No free API — use browser automation
+# 1. Open linkedin.com/analytics/
+# 2. Parse page for metrics
+# 3. Save to engagement-data.json
+```
+
+### Automated Collection Script
+```bash
+#!/bin/bash
+# Run at 7:30 PM daily before report generation
+DATE=$(date +%Y-%m-%d)
+
+# Collect from all platform logs
+python3 ~/.openclaw/scripts/collect-analytics.py --date "$DATE" \
+  --twitter ~/.openclaw/memory/twitter-analytics.json \
+  --linkedin ~/.openclaw/memory/linkedin-analytics.json \
+  --output ~/.openclaw/memory/engagement-data.json
+
+echo "Analytics collected for $DATE"
+```
+
+## Error Handling
+| Error | Fix |
+|-------|-----|
+| Twitter API rate limited | Use cached data from last successful fetch |
+| Browser can't load analytics page | Use cached data, note "estimated" in report |
+| LinkedIn login expired | Re-authenticate, try again, mark as "unavailable" |
+| YouTube API quota exceeded | Scrape studio.youtube.com via browser |
+| Data file corrupted | Rebuild from platform dashboards, backup regularly |
+| Zero engagement reported | Double-check — did we actually post? Flag if posts were published but got 0 |
+
+## Report Delivery Fallback
+1. Send via WhatsApp (primary)
+2. If WhatsApp fails → save to `~/reports/daily/YYYY-MM-DD.txt`
+3. If Boss asks → deliver via file-delivery skill
+
+## Trend Detection
+After collecting 7+ days of data, auto-detect:
+```python
+# Flag significant changes
+if today_followers > yesterday_followers * 1.1:
+    alert("Follower spike detected! +10% today")
+if today_engagement == 0 and posts_published > 0:
+    alert("WARNING: Published content getting zero engagement")
+if weekly_avg < last_week_avg * 0.7:
+    alert("Performance dropping — 30% below last week")
+```
+
+## Output Format
+```
+ANALYTICS REPORT GENERATED:
+- Type: [Daily / Weekly]
+- Platforms covered: [list]
+- Data quality: [All live / Some cached / Estimated]
+- Delivered via: [WhatsApp / File / Pending]
+- Key insight: [one-line summary of most important finding]
+```

@@ -162,3 +162,110 @@ When Boss needs logo variations or brand assets — Recraft V4 is #1 for this.
 - Post at peak hours: 9 AM and 7 PM (Boss's timezone)
 - Track which posts perform best — double down on winners
 - When a new AI model drops, test it immediately and post a comparison video
+
+## Triggers
+- cron: "0 6 * * 1" (weekly scan every Monday 6 AM)
+- "what's trending", "latest trends", "new AI models"
+- "content ideas", "what should I post about"
+- When any content skill needs fresh ideas or prompts
+
+## Automated Trend Scanning Workflow
+
+### Step 1: Scan Sources (browser automation)
+```bash
+#!/bin/bash
+# Weekly trend scan — run Monday 6 AM
+DATE=$(date +%Y-%m-%d)
+
+# Scan TikTok trending
+echo "Scanning TikTok Creative Center..."
+# Browser: open https://ads.tiktok.com/business/creativecenter/inspiration/popular/hashtag/
+# Extract top 10 hashtags in tech/business category
+
+# Scan Twitter trending
+echo "Scanning X/Twitter trends..."
+# Browser: open https://x.com/explore/tabs/trending
+# Extract tech-related trends
+
+# Scan Product Hunt
+echo "Scanning Product Hunt launches..."
+# Browser: open https://www.producthunt.com
+# Note top AI/dev tools launched this week
+
+# Scan HuggingFace
+echo "Scanning HuggingFace for new models..."
+# Browser: open https://huggingface.co/models?sort=trending
+# Note any new video/image/voice models
+```
+
+### Step 2: Analyze & Score Trends
+```python
+def score_trend(trend):
+    """Score trend relevance for Black Layers content."""
+    score = 0
+    relevant_keywords = ["ai", "app", "developer", "startup", "ios", "coding", "tech", "saas"]
+    for kw in relevant_keywords:
+        if kw in trend["name"].lower():
+            score += 20
+    if trend["growth_rate"] > 50:  # % growth
+        score += 30
+    if trend["age_days"] < 3:  # fresh trend
+        score += 20
+    return score
+```
+
+### Step 3: Update This File
+After scanning, update PART 1 (Trending Content) and PART 2 (AI Models) with fresh data.
+
+### Step 4: Push to Content Skills
+Notify Content Engine, Video Creator, and Twitter Manager about new trends:
+```json
+{
+  "date": "2026-04-05",
+  "trends": [
+    {"name": "trend name", "platform": "tiktok", "relevance": 80, "content_idea": "..."}
+  ],
+  "new_models": [
+    {"name": "model", "type": "video", "improvement": "2x faster than previous"}
+  ],
+  "recommended_hashtags": ["#AIAgent", "#BuildInPublic"],
+  "audio_trending": ["song name — artist"]
+}
+```
+
+## Error Handling
+| Error | Fix |
+|-------|-----|
+| TikTok Creative Center blocked | Use VPN or scrape via API alternative |
+| Browser timeout on trend pages | Retry with fresh session, reduce page load |
+| HuggingFace rate limited | Use cached model list, update next day |
+| Trend data is stale (>7 days old) | Force rescan, flag content as "unverified trend" |
+| Can't determine trend relevance | Default to safe content themes, skip risky trends |
+
+## Trend History
+Store all scans in `~/.openclaw/memory/trend-history.json` for pattern analysis:
+```json
+{
+  "scans": [
+    {
+      "date": "2026-04-05",
+      "top_trends": ["trend1", "trend2"],
+      "new_models": ["model1"],
+      "content_ideas_generated": 5,
+      "ideas_used": 3,
+      "ideas_viral": 1
+    }
+  ]
+}
+```
+
+## Output Format
+```
+TREND SCAN COMPLETE:
+- Sources scanned: [list]
+- New trends found: [count]
+- New AI models: [count]
+- Content ideas generated: [count]
+- Skills notified: [Content Engine, Video Creator, etc.]
+- Next scan: [date]
+```

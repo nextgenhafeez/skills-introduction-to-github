@@ -160,3 +160,71 @@ response = requests.post(
 | CogVideoX | Unlimited | ★★★☆☆ | Self-host | Budget |
 | HunyuanVideo | Unlimited | ★★★★☆ | Self-host | Free quality |
 
+## Triggers
+- "make a viral video", "create short video", "generate reel"
+- "TikTok content", "YouTube short", "Instagram reel"
+- Daily pipeline cron: "0 7 * * *" (morning batch generation)
+- When Trend Tracker identifies a hot format to replicate
+
+## Full Automation Pipeline Script
+```python
+#!/usr/bin/env python3
+"""Daily viral video pipeline — generates, edits, and queues for posting."""
+import requests, subprocess, json, os
+from datetime import datetime
+
+DATE = datetime.now().strftime("%Y-%m-%d")
+CONTENT_DIR = os.path.expanduser("~/.openclaw/content/videos")
+os.makedirs(CONTENT_DIR, exist_ok=True)
+
+# Model fallback chain
+MODELS = [
+    {"name": "kling", "fn": "generate_kling"},
+    {"name": "minimax", "fn": "generate_minimax"},
+    {"name": "wan2.1", "fn": "generate_wan"},
+]
+
+def generate_video(prompt, output_name):
+    for model in MODELS:
+        try:
+            result = globals()[model["fn"]](prompt)
+            if result:
+                # Post-process: add text overlay + audio
+                output = f"{CONTENT_DIR}/{DATE}_{output_name}.mp4"
+                add_overlay(result, output)
+                return {"file": output, "model": model["name"], "status": "success"}
+        except Exception as e:
+            print(f"{model['name']} failed: {e}, trying next...")
+    return {"status": "all_models_failed", "prompt": prompt}
+
+def add_overlay(input_path, output_path):
+    """Add text overlay and trending audio via ffmpeg."""
+    subprocess.run([
+        "ffmpeg", "-i", input_path,
+        "-vf", "drawtext=text='Black Layers':fontsize=24:fontcolor=white:x=20:y=h-40",
+        "-c:a", "copy", output_path
+    ], check=True)
+```
+
+## Error Handling
+| Error | Fix |
+|-------|-----|
+| Kling API timeout (>5 min) | Switch to MiniMax, queue Kling retry for later |
+| MiniMax daily limit reached | Switch to Wan 2.1 via SiliconFlow |
+| All APIs down | Use cached/pre-generated clips, notify Boss |
+| FFmpeg overlay fails | Post raw video without overlay, fix script later |
+| Video quality too low | Retry with higher resolution setting or different prompt |
+| Upload to platform fails | Save to pending, retry in 1 hour |
+| Prompt produces weird output | Revise prompt using prompting rules, regenerate |
+
+## Output Format
+```
+VIRAL VIDEO BATCH:
+- Videos generated: [count]
+- Model used: [Kling / MiniMax / Wan2.1]
+- Files: [list of paths]
+- Post-processed: [yes/no]
+- Queued for: [TikTok, YouTube Shorts, Instagram Reels]
+- Estimated viral score: [low/medium/high] (based on hook + trend match)
+```
+

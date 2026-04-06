@@ -141,3 +141,96 @@ Abdul
 - Quality over quantity. 2 great leads > 20 spammy messages.
 - Follow up once after 5 days. If no reply, move on.
 - Track all leads in `~/.openclaw/memory/leads-database.json`
+
+## Triggers
+- cron: "0 10 * * *" (daily hunt at 10 AM)
+- cron: "0 12 * * *" (send lead report at 12 PM)
+- "find me clients", "hunt leads", "find prospects"
+- "any leads today?", "who needs apps?"
+
+## Lead Database Schema
+```json
+{
+  "leads": [
+    {
+      "id": "lead_001",
+      "name": "John Doe",
+      "company": "StartupXYZ",
+      "source": "reddit",
+      "source_url": "https://reddit.com/r/startups/...",
+      "need": "iOS MVP for fintech app",
+      "score": "hot",
+      "date_found": "2026-04-05",
+      "outreach_sent": true,
+      "outreach_date": "2026-04-05",
+      "follow_up_date": "2026-04-10",
+      "response": null,
+      "status": "awaiting_response",
+      "notes": "Has budget, mentioned $50K range"
+    }
+  ]
+}
+```
+
+## Automated Lead Scoring
+```python
+def score_lead(lead):
+    score = 0
+    # Has budget mentioned → +30
+    if any(w in lead["text"].lower() for w in ["budget", "$", "pay", "invest"]):
+        score += 30
+    # Needs iOS specifically → +25
+    if any(w in lead["text"].lower() for w in ["ios", "iphone", "swift", "app store"]):
+        score += 25
+    # Urgency → +20
+    if any(w in lead["text"].lower() for w in ["asap", "urgent", "this week", "deadline"]):
+        score += 20
+    # Business context → +15
+    if any(w in lead["text"].lower() for w in ["startup", "company", "business", "revenue"]):
+        score += 15
+    # Recent post → +10
+    if lead["age_days"] <= 3:
+        score += 10
+
+    if score >= 60: return "hot"
+    if score >= 30: return "warm"
+    return "cold"
+```
+
+## Follow-Up Automation
+```bash
+# Run daily: check for leads needing follow-up
+python3 -c "
+import json
+from datetime import datetime, date
+
+with open('$HOME/.openclaw/memory/leads-database.json') as f:
+    data = json.load(f)
+
+today = date.today().isoformat()
+for lead in data['leads']:
+    if lead['follow_up_date'] == today and lead['status'] == 'awaiting_response':
+        print(f'FOLLOW UP: {lead[\"name\"]} from {lead[\"company\"]} — {lead[\"source\"]}')
+"
+```
+
+## Error Handling
+| Error | Fix |
+|-------|-----|
+| Reddit rate-limited | Switch to Twitter/ProductHunt, retry Reddit in 1 hour |
+| Browser can't load page | Clear cache, retry with new session |
+| Lead database file locked | Wait 5s, retry, if still locked → backup and recreate |
+| Duplicate lead found | Skip, update existing entry with new info |
+| Outreach email bounced | Try LinkedIn DM or Twitter DM instead |
+| Boss says lead is bad quality | Update scoring weights, log feedback |
+
+## Output Format
+```
+LEAD HUNT COMPLETE:
+- Platforms searched: [list]
+- Time spent: [minutes]
+- Leads found: [hot] hot, [warm] warm, [cold] cold
+- Outreach sent: [count]
+- Follow-ups due today: [count]
+- Database size: [total leads]
+```
