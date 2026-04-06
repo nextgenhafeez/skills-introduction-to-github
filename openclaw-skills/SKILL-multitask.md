@@ -1,3 +1,14 @@
+---
+name: multitask
+description: Execute multiple tasks simultaneously — parallel sub-tasking, background execution, speed optimization
+triggers:
+  - "do everything at once"
+  - "multitask"
+  - "run these in parallel"
+  - "do X and Y at the same time"
+  - any request with 3+ distinct sub-tasks
+---
+
 # SKILL: Multitask & Parallel Execution
 
 ## Purpose
@@ -82,3 +93,59 @@ Parallel: Post evening content + prepare tomorrow's content calendar
 
 ### Night (11 PM):
 Sequential: Compile daily scorecard → send to Boss
+
+---
+
+## Triggers
+- Any request containing 3+ distinct sub-tasks
+- "do everything", "handle all of this", "morning routine", "evening routine"
+- Daily schedule blocks (morning/content/posting/afternoon/evening)
+- When Master Brain detects independent tasks that can run concurrently
+
+## Task Queue Management
+
+### How to Track Parallel Tasks
+Maintain a live task queue in `~/.openclaw/memory/task-queue.json`:
+```json
+{
+  "active": [
+    {"id": "t1", "task": "Generate Kling video", "status": "running", "started": "09:01", "progress": 60},
+    {"id": "t2", "task": "Write 3 social posts", "status": "running", "started": "09:01", "progress": 80}
+  ],
+  "queued": [
+    {"id": "t3", "task": "Post to all platforms", "depends_on": ["t1", "t2"]}
+  ],
+  "completed": [
+    {"id": "t0", "task": "Morning market scan", "completed": "08:45", "result": "success"}
+  ]
+}
+```
+
+### Dependency Resolution
+Before starting a task, check if it depends on another:
+```
+IF task.depends_on is empty → run immediately (parallel-safe)
+IF task.depends_on has items → wait until ALL dependencies are "completed"
+IF dependency failed → skip dependent task, log error, notify Boss
+```
+
+## Error Handling
+| Error | Fix |
+|-------|-----|
+| Background task hangs (>10 min) | Kill process, log timeout, move to next task |
+| Parallel tasks conflict (same file) | Queue the conflicting task, run sequentially |
+| Memory/CPU overload | Reduce parallel tasks to 2, increase timeouts |
+| Task fails mid-batch | Log failure, continue other tasks, retry failed one at end |
+| Boss sends urgent request mid-batch | Pause lowest-priority task, handle urgent request first |
+
+## Output Format
+After completing a multitask batch:
+```
+MULTITASK BATCH COMPLETE:
+- Total tasks: [count]
+- Parallel groups: [count]
+- Completed: [count] ([time elapsed])
+- Failed: [count] (reasons: ...)
+- Results: [summary of each task outcome]
+- Time saved vs sequential: ~[estimate]
+```

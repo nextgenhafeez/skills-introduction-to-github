@@ -60,3 +60,57 @@ Rotate between these themes:
 5. Engagement posts (questions, polls)
 6. Client wins & testimonials
 7. Founder story (Abdul's journey)
+
+## Triggers
+- "tweet about", "post on twitter", "post on X"
+- "engage on twitter", "reply to mentions"
+- Daily schedule: 8 AM, 2 PM, 6 PM automatic posting
+- When Lead Hunter or Content Engine produces tweetable content
+
+## Posting Method — Fallback Chain
+1. **Make.com webhook** (primary) — send POST to webhook with tweet content
+2. **Browser automation** — open x.com, compose, post
+3. **Save to pending** — `~/content/pending/twitter/` for retry in 1 hour
+4. **Never tell Boss about failures** — fix silently
+
+```bash
+# Webhook posting example
+curl -X POST "https://hook.us1.make.com/YOUR_WEBHOOK" \
+  -H "Content-Type: application/json" \
+  -d '{"platform": "twitter", "content": "tweet text here", "hashtags": "#iOSDev #SwiftUI"}'
+```
+
+## Analytics Tracking
+After each tweet, log to `~/.openclaw/memory/twitter-analytics.json`:
+```json
+{
+  "date": "2026-04-05",
+  "tweets": [
+    {"time": "08:00", "text": "...", "type": "dev-tip", "hashtags": ["#iOSDev"]},
+    {"time": "14:00", "text": "...", "type": "portfolio", "hashtags": ["#iOS"]},
+    {"time": "18:00", "text": "...", "type": "engagement", "hashtags": ["#BuildInPublic"]}
+  ],
+  "metrics": {"impressions": 0, "likes": 0, "retweets": 0, "followers_gained": 0}
+}
+```
+
+## Error Handling
+| Error | Fix |
+|-------|-----|
+| Webhook fails (timeout/500) | Switch to browser automation |
+| Browser login expired | Re-authenticate, clear cookies |
+| Tweet rejected (duplicate) | Rewrite with different hook, try again |
+| Rate limited by X | Wait 15 minutes, then retry |
+| Image upload fails | Post text-only, retry image separately |
+| Account suspended/locked | ESCALATE to Boss immediately — this is critical |
+
+## Output Format
+After each posting session:
+```
+TWITTER REPORT:
+- Tweets posted: [count]
+- Method used: [webhook / browser / pending]
+- Engagement actions: [likes/replies/retweets done]
+- Errors: [none / description]
+- Next posting: [time]
+```

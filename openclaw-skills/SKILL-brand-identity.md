@@ -105,3 +105,51 @@ This is the single source of truth for all Black Layers content and marketing.
 - Offshore factories (we care about quality, not just shipping code)
 
 Our edge: **We build products, not just code. Our own app makes $10K/month. That's proof.**
+
+## Triggers
+- Any content creation task (validates brand consistency before publishing)
+- "check brand voice", "is this on-brand", "brand review"
+- Before any outreach email, social post, or client communication
+- When Content Engine, Twitter Manager, or LinkedIn Manager generate content
+
+## Brand Consistency Check Workflow
+Before ANY content goes live, run this checklist:
+```
+BRAND CHECK:
+[ ] Uses correct company name ("Black Layers" not "Blacklayers" or "BL")
+[ ] References real portfolio numbers ($10K/month, 20+ apps)
+[ ] Tone matches brand voice (confident but humble)
+[ ] No corporate jargon (synergy, leverage, paradigm)
+[ ] Has a CTA (website link, DM, comment)
+[ ] Visual matches brand colors (black/white/blue #2563EB)
+[ ] No competitor bashing
+[ ] Claims are backed by proof
+```
+
+## Content Validation API
+Other skills should call brand-identity before publishing:
+```
+Input: { "content": "post text here", "platform": "twitter" }
+Output: {
+  "approved": true/false,
+  "issues": ["missing CTA", "wrong tone"],
+  "suggested_fix": "Add 'blacklayers.ca' at the end"
+}
+```
+
+## Error Handling
+| Error | Fix |
+|-------|-----|
+| Content uses wrong company info | Correct immediately, reference this file |
+| Brand voice inconsistent | Rewrite to match DO/DON'T guidelines |
+| Missing portfolio reference | Add at least one portfolio mention per 5 posts |
+| Competitor mentioned negatively | Remove, focus on our strengths instead |
+| Old/wrong stats used | Always pull from this file — single source of truth |
+
+## Periodic Update
+Check and update this file monthly:
+- Revenue numbers (is AdClose still $10K+/month?)
+- App count (have we shipped more than 20 now?)
+- New portfolio projects to add
+- Fiverr reviews count update
+- Any new services to list
