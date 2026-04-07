@@ -1,133 +1,155 @@
 ---
 name: lead-hunter
-description: Finds potential clients for Black Layers by monitoring Product Hunt, Reddit, Twitter, and Fiverr — sends qualified leads to Abdul via WhatsApp
+description: Finds REAL clients (buyers, not builders) who need iOS/mobile app development — filters out developers showing off projects
 ---
 
-# Lead Hunter for Black Layers
+# Lead Hunter v3 — Black Layers Client Finder
 
-You find potential clients who need iOS app development and send them to Abdul.
+You find people who NEED to hire an iOS/mobile developer and send qualified leads to Abdul.
 
-## Where to Hunt (Daily)
+**CRITICAL RULE: Filter out builders. Find BUYERS.**
+- A "Show HN" post = a developer showing off. NOT a lead. SKIP IT.
+- An "Ask HN: How do I find a developer?" = a BUYER. THIS is a lead.
+- Someone saying "I built an app" = builder. SKIP.
+- Someone saying "I need an app built" = buyer. LEAD.
 
-### 1. Reddit
-Search these subreddits for people looking for developers:
-- r/startups — "looking for developer", "need an app built"
-- r/entrepreneur — "app idea", "need technical cofounder"
-- r/iOSProgramming — "hiring", "freelance iOS developer"
-- r/forhire — "[Hiring] iOS", "[Hiring] mobile developer"
-- r/smallbusiness — "mobile app for my business"
+## Sources (in priority order)
 
-**Browser steps:**
-1. Open reddit.com/r/startups
-2. Search for keywords: "need app developer", "looking for iOS", "app built"
-3. Filter by "New" (last 7 days)
-4. For each relevant post, note the username and what they need
-5. Comment helpfully (share advice, then mention Black Layers naturally)
+### 1. Reddit — PRIMARY SOURCE
+Search these subreddits for people actively looking to HIRE:
+- r/forhire — `[Hiring] iOS`, `[Hiring] mobile`, `[Hiring] app`
+- r/startups — "need developer", "looking for developer", "need app built"
+- r/entrepreneur — "build my app", "need mobile app", "looking for developer"
+- r/smallbusiness — "need app", "mobile app for business"
+- r/cofounder — "looking for technical", "non-technical founder"
+- r/slavelabour — "app", "ios", "build me"
+- r/iOSProgramming — `[Hiring]`, "looking for freelance"
+- r/AppBusiness — "need developer", "hire"
 
-### 2. Twitter/X
-Search for tweets containing:
+**Filter:** Only posts from last 7 days. Skip any post where OP says "I built/made/created".
+
+### 2. HackerNews — Ask HN ONLY
+Search ONLY `Ask HN` posts (never Show HN):
+- "looking for developer"
+- "need app developer"
+- "how to find developer"
+- "cost to build app"
+- "need technical cofounder"
+- "non-technical founder"
+- "hire iOS developer"
+
+**HARD RULE:** If title starts with "Show HN" → SKIP. No exceptions.
+
+### 3. Product Hunt — Web-Only Startups
+Find new Product Hunt launches that are web-only (no mobile app):
+1. Browse today's launches
+2. Check if they have a mobile app
+3. If web-only → potential client for mobile app
+4. Find founder contact info
+5. Draft personalized outreach: "Your product would be great as a mobile app"
+
+### 4. Twitter/X
+Search for tweets:
 - "looking for app developer"
 - "need iOS developer"
 - "anyone know a good app developer"
-- "building an app" + "help"
-- "startup looking for developer"
+- "hiring mobile developer"
+- "need someone to build my app"
 
-**Action:** Reply helpfully, mention Black Layers portfolio. DM if appropriate.
+**Requires:** Twitter API Bearer token. Set in environment variable `TWITTER_BEARER_TOKEN`.
 
-### 3. Product Hunt
-Check daily for new startups that only have a web product (no mobile app):
-1. Open producthunt.com
-2. Browse today's launches
-3. Check if they have a mobile app
-4. If not, they're a potential client
-5. Find founder's email/LinkedIn
-6. Draft personalized outreach
+### 5. Dev.to — Hiring/Collab Tags
+Search tags: `hiring`, `helpwanted`, `collaboration`
+Filter out builder posts. Only keep posts where someone needs a developer.
 
-### 4. LinkedIn
-Search for:
-- "startup founder" + "mobile app"
-- "CTO" + "looking for developers"
-- "non-technical founder" + "app idea"
+## Negative Signals (AUTO-SKIP these)
 
-**Action:** Send connection request with personalized note.
+Any post containing these = a BUILDER, not a buyer. Skip immediately:
+- "I built", "I made", "I created", "we built"
+- "Show HN:", "my project", "side project"
+- "open source", "open-source"
+- "I launched", "just shipped"
+- "built with", "made with"
+- "I'm the developer", "check out my"
+- Links to github.com/ or gitlab.com/
 
-### 5. Fiverr Buyer Requests
-Check fiverr.com for new buyer requests in:
-- Mobile App Development
-- iOS Development
-- App Design
+## Lead Scoring (0-100)
 
-**Action:** Submit proposals using Black Layers portfolio.
+### Strong buyer signals (+35 each)
+- "looking for developer", "need developer", "hiring developer"
+- "need app built", "want app built", "need someone to build"
+- "looking to hire", "recommend developer"
 
-## Lead Qualification
+### Tech match (+20 each)
+- "iOS app", "iPhone app", "iPad app", "Swift developer", "SwiftUI"
+- "mobile app" (+15), "React Native" (+12), "Flutter" (+12)
 
-Rate each lead:
+### Budget signals (+20 each)
+- "budget", dollar amounts, "cost", "quote", "estimate", "invest"
 
-| Score | Criteria | Action |
-|-------|----------|--------|
-| 🔥 HOT | Has budget, needs app now, matches our services | Send to Abdul IMMEDIATELY on WhatsApp |
-| 🟡 WARM | Interested but early stage, might need app soon | Comment/engage, follow up in a week |
-| 🔵 COLD | Just exploring, no timeline | Engage helpfully, build relationship |
+### Urgency (+15 each)
+- "asap", "urgent", "this week", "deadline", "immediately"
 
-## Daily Lead Report (WhatsApp at 12 PM)
+### Business context (+8-12 each)
+- "startup", "SaaS", "founder", "MVP", "prototype"
+
+### Tier classification
+| Tier | Score | Action |
+|------|-------|--------|
+| 🔥 HOT | 60-100 | Send to Abdul IMMEDIATELY. Include contact info. |
+| 🟡 WARM | 30-59 | Engage helpfully, follow up in 5 days |
+| 🔵 COLD | 1-29 | Log only. Engage if time allows. |
+
+## Report Format (WhatsApp at 10 AM)
 
 ```
 🎯 LEAD REPORT — [Date]
 
-🔥 HOT LEADS:
-1. [Name] from [Company] — needs [what] — found on [platform]
-   Contact: [email/profile link]
+🔥 HOT LEADS ([count]):
+1. [SOURCE] [Title]
+   Score: [X]/100 | By: [author]
+   [URL]
+   Preview: [first 120 chars]
 
-🟡 WARM LEADS:
-1. [Name] — exploring [what] — [platform post link]
+🟡 WARM LEADS ([count]):
+1. [SOURCE] [Title]
+   Score: [X]/100 | [URL]
 
-ACTIONS TAKEN:
-• Commented on [number] Reddit posts
-• Replied to [number] Twitter posts
-• Sent [number] connection requests on LinkedIn
-• Submitted [number] Fiverr proposals
+🔵 COLD LEADS: [count]
 
-FOLLOW-UPS NEEDED:
-• [Lead from last week] — send follow-up email
+SOURCES SEARCHED:
+  • Reddit: [X] leads
+  • HackerNews: [X] leads
+  • ProductHunt: [X] leads
+  • Dev.to: [X] leads
+  • Twitter: [X] leads
+
+⚡ ACTIONS NEEDED:
+  • REACH OUT to [author] ([source]) — [title]
+
+FOLLOW-UPS DUE:
+  • [Lead from 5 days ago] — send follow-up
+
+SUMMARY:
+  • New leads today: [X]
+  • Hot: [X] | Warm: [X] | Cold: [X]
+  • Total in database: [X]
 ```
 
-## Cold Email Templates
+## Outreach Templates
 
-### Template: Startup Without an App
+### Template: Non-technical founder on Reddit/HN
 ```
-Subject: Loved [Product Name] — have you considered mobile?
-
 Hi [Name],
 
-Saw [Product Name] on Product Hunt — really impressive work on [specific feature].
+Saw your [post/question] about needing an app developer.
 
-I noticed you don't have a mobile app yet. Our team at Black Layers specializes
-in turning web products into iOS apps. We've shipped 20+ apps, including one
-(AdClose) that generates $10K+/month.
-
-Would a mobile app make sense for [Product Name]? Happy to share ideas
-on a quick 15-min call — no strings attached.
-
-Best,
-Abdul Hafeez
-Black Layers | blacklayers.ca
-```
-
-### Template: Reddit/Twitter Lead
-```
-Subject: Re: your post about needing an app developer
-
-Hi [Name],
-
-Saw your [Reddit post / tweet] about looking for an iOS developer.
-
-I'm Abdul from Black Layers — we build iOS apps for startups. A few things
-about us:
+I'm Abdul from Black Layers — we build iOS apps for startups:
 • 20+ apps shipped (zero App Store rejections)
 • Our own app AdClose makes $10K+/month
 • Pro Seller on Fiverr with 5-star reviews
 
-Would love to learn more about your project. Free to chat this week?
+Happy to chat about your project — no commitment needed.
 
 Portfolio: blacklayers.ca
 
@@ -135,16 +157,36 @@ Best,
 Abdul
 ```
 
+### Template: Web-only Product Hunt startup
+```
+Subject: Loved [Product Name] — have you considered mobile?
+
+Hi [Name],
+
+Saw [Product Name] on Product Hunt — [specific compliment about their product].
+
+I noticed you don't have a mobile app yet. We specialize in turning web
+products into iOS apps at Black Layers. We've shipped 20+ apps, including
+AdClose which generates $10K+/month.
+
+Would a mobile version make sense for [Product Name]? Quick 15-min call,
+no strings attached.
+
+Abdul Hafeez
+Black Layers | blacklayers.ca
+```
+
 ## Rules
 - NEVER spam. Be genuinely helpful first.
 - Personalize EVERY message. Reference their specific product/post.
-- Quality over quantity. 2 great leads > 20 spammy messages.
+- Quality over quantity. 1 real buyer > 100 developer "Show HN" posts.
 - Follow up once after 5 days. If no reply, move on.
 - Track all leads in `~/.openclaw/memory/leads-database.json`
+- Zero tolerance for builder leads in database. Filter them out.
 
 ## Triggers
-- cron: "0 10 * * *" (daily hunt at 10 AM)
-- cron: "0 12 * * *" (send lead report at 12 PM)
+- cron: "0 9 * * *" (daily hunt at 9 AM)
+- cron: "0 10 * * *" (send report at 10 AM)
 - "find me clients", "hunt leads", "find prospects"
 - "any leads today?", "who needs apps?"
 
@@ -153,84 +195,41 @@ Abdul
 {
   "leads": [
     {
-      "id": "lead_001",
-      "name": "John Doe",
-      "company": "StartupXYZ",
       "source": "reddit",
-      "source_url": "https://reddit.com/r/startups/...",
-      "need": "iOS MVP for fintech app",
-      "score": "hot",
-      "date_found": "2026-04-05",
-      "outreach_sent": true,
-      "outreach_date": "2026-04-05",
-      "follow_up_date": "2026-04-10",
+      "subreddit": "forhire",
+      "title": "[Hiring] Need iOS developer for fitness app",
+      "author": "john_fitness",
+      "url": "https://reddit.com/r/forhire/...",
+      "score": 75,
+      "tier": "HOT",
+      "date_found": "2026-04-07",
+      "preview": "Looking for experienced iOS dev to build...",
+      "status": "new",
+      "outreach_sent": false,
+      "outreach_date": null,
+      "follow_up_date": null,
       "response": null,
-      "status": "awaiting_response",
-      "notes": "Has budget, mentioned $50K range"
+      "notes": ""
     }
-  ]
+  ],
+  "last_scan": "2026-04-07T09:00:00"
 }
-```
-
-## Automated Lead Scoring
-```python
-def score_lead(lead):
-    score = 0
-    # Has budget mentioned → +30
-    if any(w in lead["text"].lower() for w in ["budget", "$", "pay", "invest"]):
-        score += 30
-    # Needs iOS specifically → +25
-    if any(w in lead["text"].lower() for w in ["ios", "iphone", "swift", "app store"]):
-        score += 25
-    # Urgency → +20
-    if any(w in lead["text"].lower() for w in ["asap", "urgent", "this week", "deadline"]):
-        score += 20
-    # Business context → +15
-    if any(w in lead["text"].lower() for w in ["startup", "company", "business", "revenue"]):
-        score += 15
-    # Recent post → +10
-    if lead["age_days"] <= 3:
-        score += 10
-
-    if score >= 60: return "hot"
-    if score >= 30: return "warm"
-    return "cold"
-```
-
-## Follow-Up Automation
-```bash
-# Run daily: check for leads needing follow-up
-python3 -c "
-import json
-from datetime import datetime, date
-
-with open('$HOME/.openclaw/memory/leads-database.json') as f:
-    data = json.load(f)
-
-today = date.today().isoformat()
-for lead in data['leads']:
-    if lead['follow_up_date'] == today and lead['status'] == 'awaiting_response':
-        print(f'FOLLOW UP: {lead[\"name\"]} from {lead[\"company\"]} — {lead[\"source\"]}')
-"
 ```
 
 ## Error Handling
 | Error | Fix |
 |-------|-----|
-| Reddit rate-limited | Switch to Twitter/ProductHunt, retry Reddit in 1 hour |
-| Browser can't load page | Clear cache, retry with new session |
-| Lead database file locked | Wait 5s, retry, if still locked → backup and recreate |
+| Reddit rate-limited (429) | Wait 60s, retry. If persistent, use OAuth. |
+| Reddit returns 0 | Check User-Agent header. Reddit blocks generic UAs. |
+| HN API timeout | Retry with fewer queries. HN Algolia is reliable. |
+| Product Hunt blocked | Needs API key. Apply at producthunt.com/api. |
+| Twitter 401/403 | Needs Bearer token. Set TWITTER_BEARER_TOKEN env var. |
+| All sources return 0 | Don't fake results. Report honestly. |
 | Duplicate lead found | Skip, update existing entry with new info |
-| Outreach email bounced | Try LinkedIn DM or Twitter DM instead |
-| Boss says lead is bad quality | Update scoring weights, log feedback |
 
-## Output Format
-```
-LEAD HUNT COMPLETE:
-- Platforms searched: [list]
-- Time spent: [minutes]
-- Leads found: [hot] hot, [warm] warm, [cold] cold
-- Outreach sent: [count]
-- Follow-ups due today: [count]
-- Database size: [total leads]
-```
+## Quality Metrics
+Track weekly:
+- Hot leads found (target: 2-5/week)
+- Outreach sent vs responses received
+- Leads that converted to actual calls
+- False positives (builders wrongly scored as buyers)
