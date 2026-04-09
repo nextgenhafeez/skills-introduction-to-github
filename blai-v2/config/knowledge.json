@@ -1,0 +1,126 @@
+{
+  "agent_memory": {
+    "last_updated": "2026-04-09",
+    "lessons_learned": [
+      "LinkedIn rejects duplicate content — always write unique copy per platform",
+      "Never post same caption to LinkedIn and Twitter",
+      "Keep WhatsApp messages under 5 lines for updates, 10 for reports",
+      "When rate-limited, switch models silently — never tell Boss about API errors",
+      "Always filter out 'builders' from leads — only find BUYERS who need apps built",
+      "Old lead hunter v2 found 46 junk leads (all developers, not clients) — v3 fixed this",
+      "Reddit blocked API — use RSS feeds instead (no auth needed)",
+      "Bot detection prevents web scraping — use direct APIs",
+      "Basic FFmpeg/ImageMagick graphics look cheap — use professional templates or AI generation",
+      "Instagram posts with custom graphics perform well visually",
+      "Fresh social accounts get low engagement initially — be patient, focus on quality",
+      "Web_fetch of reddit.com returns massive HTML and crashes agent — use API only",
+      "Never use Morocco number (+212641503230) in client outreach — use Canada number",
+      "Product Hunt web-only startups are great outreach targets",
+      "The best performing content uses specific numbers ($10K/month, 20+ apps, 30 days)"
+    ],
+    "corrections_from_boss": [
+      "Don't call yourself by another name — you are BLAI",
+      "Don't forget who Boss is — Abdul Hafeez, Black Layers founder",
+      "Don't send error messages to friends on WhatsApp — go silent instead",
+      "Don't narrate your process — just show results",
+      "Posts go to Documents/skills-introduction-to-github/Posts, not Downloads/SushiKi",
+      "SushiKi is a client project, not a BL product — never mix them"
+    ]
+  },
+  "lead_hunting": {
+    "strategy": "v3 — buyer-focused",
+    "negative_signals": [
+      "i built", "i made", "i created", "we built", "show hn", "my project",
+      "side project", "open source", "i launched", "just shipped", "built with",
+      "made with", "check out my", "for hire", "hiring full-time"
+    ],
+    "positive_signals": [
+      "need developer", "looking for developer", "hiring developer",
+      "need app built", "want app built", "looking to hire",
+      "need ios", "need mobile app", "cost to build", "need technical cofounder"
+    ],
+    "scoring": "base 0, HOT >= 60, WARM >= 30, requires mobile/app context",
+    "sources": ["reddit (RSS)", "hackernews (Ask HN only)", "producthunt (web-only startups)", "dev.to (hiring tags)"],
+    "outreach_rules": [
+      "Max 10 cold emails per day",
+      "Always personalize — reference their specific product/post",
+      "Include Canadian WhatsApp: +1 (587) 429-6200",
+      "Include email: info@blacklayers.ca",
+      "Follow up after 5 days if no reply, then move on",
+      "Never spam — be genuinely helpful first"
+    ]
+  },
+  "content_strategy": {
+    "platforms": {
+      "twitter": "Short, punchy, max 280 chars, 2-3 hashtags, dev tips + portfolio",
+      "linkedin": "Professional storytelling, lessons learned, 100-200 words, founder journey",
+      "instagram": "Visual-first, casual, emojis OK, app showcases + behind-scenes"
+    },
+    "content_mix": {
+      "dev_tips": "40%",
+      "portfolio_showcase": "25%",
+      "founder_story": "20%",
+      "engagement_posts": "15%"
+    },
+    "hashtags": ["#iOSDev", "#SwiftUI", "#AppDevelopment", "#BuildInPublic", "#StartupTips", "#MobileDev"],
+    "never_repeat_theme_within": "3 days on same platform"
+  },
+  "market_intelligence": {
+    "track_institutions": ["BlackRock (IBIT ETF flows)", "MicroStrategy (BTC purchases)", "Grayscale (GBTC)", "ARK Invest (Cathie Wood)", "Bridgewater (Ray Dalio)"],
+    "track_prices": ["BTC", "ETH", "SOL", "BNB"],
+    "indicators": ["Fear & Greed Index", "RSI 14-day", "50-day & 200-day MA", "DXY (dollar index)"],
+    "rich_people_principles": {
+      "rothschild": "Buy when there's blood in the streets",
+      "buffett": "Be greedy when others are fearful, fearful when others are greedy",
+      "dalio": "Diversify across uncorrelated assets, follow debt cycles",
+      "saylor": "Long-term BTC conviction, ignore short-term noise",
+      "blackrock": "When the largest asset manager buys BTC, pay attention"
+    },
+    "rules": [
+      "NEVER auto-trade — advise only, Boss decides",
+      "Never recommend leverage above 3x",
+      "Never say 'guaranteed profit'",
+      "Always include stop-loss with trade ideas",
+      "Track every signal accuracy — grade weekly"
+    ]
+  },
+  "crypto_trading": {
+    "risk_rules": [
+      "2% rule: never risk more than 2% per trade",
+      "Stop-loss on EVERY trade before entry",
+      "Risk-reward minimum 1:2",
+      "After 2 consecutive losses, stop for the day",
+      "Position sizing: account * risk% / stop-loss distance"
+    ],
+    "halving_cycle": "Last halving April 2024, potential peak window Oct 2025 - Oct 2026. We are IN the potential peak zone."
+  },
+  "daily_schedule": {
+    "7am": "Morning market brief + institutional moves",
+    "7:30am": "Rich brain analysis",
+    "9am": "Create & post content to all platforms",
+    "10am": "Hunt leads + send outreach emails",
+    "2pm": "Check email inbox + respond",
+    "6pm": "Evening market update",
+    "10pm": "Daily scorecard + self-improvement",
+    "sunday_10am": "Weekly review + strategy adjustment"
+  },
+  "technical": {
+    "vm": "Google Cloud e2-medium, us-central1-a, IP 34.132.116.116",
+    "mac_tailscale": "100.105.165.84 (tonny@)",
+    "email_smtp": "smtp.zoho.com:587, info@blacklayers.ca",
+    "make_com": "eu1.make.com — social media posting webhooks",
+    "n8n": "http://34.132.116.116:5678 (backup automation)"
+  },
+  "portfolio_apps": {
+    "AdClose": {"desc": "Ad blocker for iOS", "revenue": "$10K+/month", "highlight": "Highest earner — lead with this"},
+    "Sakeena": {"desc": "Islamic prayer & lifestyle app", "features": "Prayer Times, GPS Qibla, Hijri Calendar, Tasbeeh"},
+    "VooConnect": {"desc": "Social media platform", "features": "Live streaming, voice messaging, real-time chat"},
+    "DirectPads": {"desc": "Real estate platform", "features": "Instant cash offers for homes within 24 hours"},
+    "Offeright": {"desc": "Real estate offer platform", "features": "Buyers submit offers directly"},
+    "CK-IN": {"desc": "App Store listing"},
+    "OrbitMessenger": {"desc": "App Store listing"},
+    "Zimbi": {"desc": "App Store listing"},
+    "BibleChats": {"desc": "App Store listing"},
+    "ARRIV": {"desc": "App Store listing"}
+  }
+}
