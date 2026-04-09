@@ -1,0 +1,15 @@
+{
+  "name": "blai-v2",
+  "version": "2.0.0",
+  "description": "BLAI — Abdul Hafeez's AI Business Partner",
+  "main": "src/whatsapp.js",
+  "scripts": {
+    "start": "node src/whatsapp.js",
+    "test": "echo 'BLAI v2 ready'"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.16",
+    "@hapi/boom": "^10.0.1",
+    "pino": "^9.6.0"
+  }
+}

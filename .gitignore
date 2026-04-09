@@ -14,3 +14,8 @@ Thumbs.db
 
 # Temp
 temp_puppeteer
+blai-v2/config/api_keys.json
+blai-v2/auth/
+blai-v2/memory/
+blai-v2/node_modules/
+blai-v2/.blai.lock
