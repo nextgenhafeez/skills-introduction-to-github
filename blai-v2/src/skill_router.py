@@ -137,6 +137,21 @@ REAL_SKILL_MAP = {
     "email stats": ("email_outreach", "get_outreach_stats"),
     "setup email webhook": ("email_outreach", "setup_email_webhook"),
 
+
+    # Real video generation (Kling AI)
+    "generate video": ("kling_video", "generate_and_wait"),
+    "make video": ("kling_video", "generate_and_wait"),
+    "create video": ("kling_video", "generate_and_wait"),
+    "text to video": ("kling_video", "generate_and_wait"),
+    "video from prompt": ("kling_video", "generate_and_wait"),
+    "animate image": ("kling_video", "generate_and_wait"),
+    "image to video": ("kling_video", "generate_and_wait"),
+    "animate this": ("kling_video", "generate_and_wait"),
+    "bring to life": ("kling_video", "generate_and_wait"),
+    "kling status": ("kling_video", "list_recent_tasks"),
+    "video stats": ("kling_video", "list_recent_tasks"),
+    "list videos": ("kling_video", "list_recent_tasks"),
+
     # Real social posting
     "post to social": ("social_poster_real", "generate_and_post"),
     "post content": ("social_poster_real", "generate_and_post"),

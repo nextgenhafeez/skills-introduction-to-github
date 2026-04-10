@@ -1,63 +1,88 @@
-# SKILL: Kling 3.0 Video Generator + Social Media Poster
+# SKILL: Kling AI Video Generation (REAL)
 
-## Purpose
-Generate AI videos using Kling 3.0 API, post to TikTok/YouTube Shorts/Instagram Reels, deliver to Boss's Mac via SCP.
+## What this skill does
+Generate real videos from text prompts or animate still images into dynamic
+videos via the Kling AI API. This is an executable skill — when Boss asks to
+"make a video" or "animate this image", the skill_router calls
+`skills.kling_video.generate_and_wait()` which talks to `api.klingai.com`,
+polls until done, downloads the mp4, and returns the real file path.
 
-## Config
-- API: https://api.klingai.com
-- Auth: JWT (HS256) using KLING_ACCESS_KEY (AK) + KLING_SECRET_KEY (SK) from env
-- Keys portal: https://app.klingai.com/global/dev
-- Script: ~/scripts/kling-video.py
-- Output dir: ~/content/videos
-- Mac delivery: SCP to tonny@100.105.165.84:/Users/tonny/Downloads
-- Dependencies: PyJWT, requests
+## Two modes — pick the RIGHT one
 
-## Free Tier
-- 66 credits/day (resets daily, no rollover)
-- 5s standard=10 credits (6 videos/day), 5s pro=35 credits (1 video/day)
-- 10s standard=20 credits (3 videos/day), 10s pro=70 credits (need paid)
-- Free: watermarked, max 5s, 720p. Pro plan ($25.99/mo): 3000 credits, no watermark, 1080p+
+### 1. text_to_video (mode: "text2video")
+Use when Boss gives only a text description.
+Examples:
+- "generate a video of a luxury iPhone app launch in a dark studio"
+- "create a 5s reel about iOS developer life"
+- "make a video showing a sleek dashboard animation"
 
-## API Endpoints
-- Text-to-video: POST /v1/videos/text2video — body: model_name "kling-v3", prompt, negative_prompt, duration (3/5/10/15), aspect_ratio (16:9/9:16/1:1), mode (std/pro), cfg_scale (0.0-1.0)
-- Image-to-video: POST /v1/videos/image2video — body: model_name "kling-v3", image (URL), prompt, negative_prompt, duration, aspect_ratio, mode
-- Poll status: GET /v1/videos/{text2video|image2video}/{task_id} — poll every 8s, max 5min. Status: succeed → task_result.videos[0].url | failed → abort
-- Auth header: Bearer {JWT_token}
+### 2. image_to_video (mode: "image2video") — USE THIS FOR 3D IMAGES & DYNAMIC IMAGES
+Use when Boss provides an image, logo, 3D render, product shot, or any still
+picture that he wants "animated", "brought to life", or "made dynamic".
+Examples of phrases that mean image2video:
+- "animate this 3D model"
+- "make this logo dynamic"
+- "bring this render to life"
+- "add motion to this image"
+- "animate this product shot"
+- "turn this static image into a video"
 
-## Usage
-- Basic: `python3 ~/scripts/kling-video.py "prompt" --duration 5 --aspect 9:16 --deliver`
-- Image-to-video: add `--image "https://..."` flag
-- With voiceover: add `--voiceover "script text"` (uses edge-tts en-US-AndrewNeural + ffmpeg merge)
-- Pro quality: `--mode pro`
-- Custom name: `--name "bl_morning"`
-- Skip delivery: `--no-deliver`
+When Boss sends an image on WhatsApp along with the request, the image gets
+saved to a tmp path and that path is passed as the `image=` argument.
 
-## Prompt Structure
-`[SUBJECT] + [ACTION] + [ENVIRONMENT] + [LIGHTING] + [CAMERA] + [STYLE]`
+## Parameters
+- `prompt` (string, max 2500 chars) — what should happen in the video
+- `negative_prompt` (string) — what to avoid. Always include at minimum:
+  "blurry, low quality, distorted, watermark, text"
+- `aspect_ratio` — "9:16" for TikTok/Reels/Shorts/Instagram, "16:9" for
+  YouTube/LinkedIn/website. DEFAULT 9:16 unless Boss specifies YouTube.
+- `duration` — 5 or 10 seconds. Start with 5 to conserve credits.
+- `mode` — "std" (standard, cheaper, faster) or "pro" (higher quality,
+  more credits). Default "std". Only use "pro" for important client/brand work.
+- `image` — required only for image2video. May be an https URL or a local
+  file path under /tmp/ or the BLAI workspace.
 
-Default negative prompt: "blurry, distorted faces, text artifacts, watermark, low quality, cartoon, anime, static, jittery, flickering"
+## Output
+`generate_and_wait()` returns a plain-text summary like:
+```
+Video generated successfully.
+  task_id: <id>
+  prompt: <first 180 chars>
+  aspect: 9:16, duration: 5s, mode: std
+  saved to: /home/tonny/blai-v2/memory/videos/20260410_043015_abc12345.mp4
+  size: 2145632 bytes
+  source URL (expires ~30 days): https://...
+```
 
-## Post-Processing
-- Branding overlay: ffmpeg overlay with ~/content/images/bl-watermark.png at bottom-right
-- Text caption: ffmpeg drawtext centered near bottom
-- Voiceover: edge-tts → ffmpeg merge audio+video
+The saved mp4 path is real. BLAI can quote it to Boss, send it to him via
+WhatsApp, or hand it off to the social_poster_real skill for publishing.
 
-## Social Media Posting
-- Option A (recommended): Make.com webhook — POST video+caption+platforms to webhook URL
-- Option B: Direct platform API uploads (requires OAuth)
-- Option C: SCP to Boss's Mac + WhatsApp caption notification
+## Rules (ABSOLUTE — never break)
+1. NEVER claim a video was generated unless the skill actually returned
+   "Video generated successfully." If the skill returns an error string,
+   quote that error verbatim to Boss. Do NOT invent a fake task_id, fake
+   file path, or fake success.
+2. ALWAYS include a negative_prompt.
+3. ALWAYS use 9:16 for short-form social (TikTok, Reels, Shorts, Instagram).
+4. ALWAYS use 16:9 for long-form (YouTube, LinkedIn video, landing pages).
+5. Downloads land in `memory/videos/`. The path is the source of truth —
+   never fabricate a filename.
+6. On failure: reduce duration from 10 to 5, or switch `mode` from "pro"
+   to "std", then retry ONCE. If it still fails, report the real error to
+   Boss and stop — do not retry in a loop.
+7. Rate limit: if you see HTTP 429 or "rate limit" in the error, wait
+   60 seconds and retry once.
 
-## Cron
-- 9 AM UTC: `python3 kling-video.py "$(python3 daily-prompt.py morning)" --duration 5 --aspect 9:16 --voiceover "$(python3 daily-script.py morning)" --deliver --name "bl_morning"`
-- 7 PM UTC: same with "evening" parameter
+## Credits / budget
+Kling AI free tier is limited. Be conservative:
+- Daily cap (self-imposed): 3 videos per day unless Boss says otherwise
+- Prefer `mode="std"` over `mode="pro"`
+- Prefer `duration=5` over `duration=10`
+- Track usage with `list_recent_tasks()` — this reads from
+  `memory/kling_log.json` which is updated on every real API call.
 
-## Rules
-- ALWAYS 9:16 for TikTok/Reels/Shorts, 16:9 for YouTube/LinkedIn
-- ALWAYS include negative prompt
-- ALWAYS deliver to Boss's Mac after generation
-- NEVER exceed daily credit budget — track usage
-- Prompt max: 2500 chars
-- Download immediately — Kling deletes after 30 days
-- Rate limit: wait 60s and retry once
-- Task fail: reduce duration or switch to std mode
-- Budget strategy (free tier): use standard 5s clips, 2-3/day. Save pro for important posts.
+## Posting the video
+After a video is generated, Boss may ask "post it to TikTok" or "post to
+Instagram". That is handled by a DIFFERENT skill
+(`social_poster_real.generate_and_post`) via Make.com webhooks. The Kling
+skill only produces the file — it does not post.
