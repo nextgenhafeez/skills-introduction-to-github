@@ -132,32 +132,68 @@ def _call_groq(system_text: str, history: list, message: str) -> str:
         groq_messages.append({"role": role, "content": msg["content"]})
     groq_messages.append({"role": "user", "content": message})
 
-    # Try each key against each model: 70b first (best quality), then 8b-instant
-    # as fallback. 8b-instant has its own separate TPD quota on Groq free tier,
-    # so this dramatically increases resilience when 70b is rate-limited.
-    GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+    # Cascade: try every key against 70b (full payload), then every key
+    # against 8b-instant (TRIMMED payload because Groq free tier has a hard
+    # 6000 TPM per-request ceiling on 8b which the full prompt blows past).
+    # 70b first because it's higher quality; 8b only as a fallback.
     all_429 = True
+
+    # Pass 1: 70b across all keys with full payload
     for groq_key in keys:
-        for model in GROQ_MODELS:
-            try:
-                resp = requests.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-                    json={
-                        "model": model,
-                        "messages": groq_messages,
-                        "max_tokens": 2048,
-                        "temperature": 0.7,
-                    },
-                    timeout=30,
-                )
-                if resp.status_code == 200:
-                    return resp.json()["choices"][0]["message"]["content"]
-                if resp.status_code != 429:
-                    all_429 = False
-            except Exception:
+        try:
+            resp = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": groq_messages,
+                    "max_tokens": 2048,
+                    "temperature": 0.7,
+                },
+                timeout=30,
+            )
+            if resp.status_code == 200:
+                return resp.json()["choices"][0]["message"]["content"]
+            if resp.status_code not in (429, 413):
                 all_429 = False
-                continue
+        except Exception:
+            all_429 = False
+            continue
+
+    # Pass 2: 8b-instant with TRIMMED payload (no history, short system text)
+    # Why: 8b free tier rejects any request > 6000 tokens TOTAL (input+output).
+    # Strip the system text down to its first 4500 chars (~1100 tokens) and
+    # drop conversation history entirely. Then cap output at 800 tokens.
+    # 1100 sys + 200 user + 800 output = ~2100 tokens, well under 6000.
+    short_system = groq_messages[0]["content"]
+    if len(short_system) > 4500:
+        short_system = short_system[:4500] + "\n[...truncated for 8b cascade...]"
+    user_msg = groq_messages[-1]["content"][:1500]
+    short_messages = [
+        {"role": "system", "content": short_system},
+        {"role": "user", "content": user_msg},
+    ]
+    for groq_key in keys:
+        try:
+            resp = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.1-8b-instant",
+                    "messages": short_messages,
+                    "max_tokens": 800,
+                    "temperature": 0.7,
+                },
+                timeout=30,
+            )
+            if resp.status_code == 200:
+                return resp.json()["choices"][0]["message"]["content"]
+            if resp.status_code not in (429, 413):
+                all_429 = False
+        except Exception:
+            all_429 = False
+            continue
+
     if all_429:
         mark_exhausted("groq")
     return ""
@@ -205,8 +241,9 @@ def get_context_for_user(phone: str) -> str:
     if prefs_file.exists():
         prefs_data = json.loads(prefs_file.read_text())
         if prefs_data:
+            corrs = prefs_data.get("corrections", [])[-10:]
             prefs = "\nBoss corrections/preferences:\n" + "\n".join(
-                f"- {p}" for p in prefs_data.get("corrections", [])[-15:]
+                f"- {p[:180]}" for p in corrs
             )
 
     # Load today's scorecard context
@@ -706,6 +743,30 @@ def think(phone: str, message: str, image_data: bytes = None) -> str:
     # SELF-IMPROVEMENT: if Boss is correcting us, persist the lesson forever.
     if is_boss(phone) and looks_like_correction(message):
         save_boss_correction(message)
+    # MANUAL PROVIDER SWITCH (Boss-only, deterministic, no LLM call):
+    # Boss can flip between providers from WhatsApp without hitting the
+    # LLM at all. Useful when one provider is misbehaving and Boss wants
+    # to force the other.
+    if is_boss(phone):
+        ml = (message or "").strip().lower()
+        if ml in ("switch to groq", "use groq", "force groq", "groq please", "switch groq"):
+            state = get_brain_state()
+            state["active_provider"] = "groq"
+            state["gemini_exhausted_at"] = int(time.time())  # block gemini probes
+            save_brain_state(state)
+            save_conversation(phone, "assistant", "Switched to Groq, Boss. Active provider is now groq.")
+            return "Switched to Groq, Boss. Active provider is now groq."
+        if ml in ("switch to gemini", "use gemini", "force gemini", "gemini please", "switch gemini"):
+            state = get_brain_state()
+            state["active_provider"] = "gemini"
+            state["gemini_exhausted_at"] = 0
+            save_brain_state(state)
+            save_conversation(phone, "assistant", "Switched to Gemini, Boss. Active provider is now gemini.")
+            return "Switched to Gemini, Boss. Active provider is now gemini."
+        if ml in ("provider status", "which provider", "what provider"):
+            state = get_brain_state()
+            return f"Active provider: {state.get('active_provider','?')}. Gemini exhausted at: {state.get('gemini_exhausted_at',0)}. Groq exhausted at: {state.get('groq_exhausted_at',0)}."
+
 
     # SELF-INTROSPECTION: if Boss asks about our model/state, inject real facts
     # into the system prompt so BLAI answers from runtime truth, not from memory.
