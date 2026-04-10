@@ -12,12 +12,23 @@
     "email": "info@blacklayers.ca",
     "timezone": "Africa/Casablanca",
     "location": "Safi, Morocco",
-    "languages": ["English", "Urdu", "Arabic"]
+    "languages": [
+      "English",
+      "Urdu",
+      "Arabic"
+    ]
   },
   "company": {
     "name": "Black Layers",
     "website": "https://www.blacklayers.ca",
-    "services": ["iOS App Development", "UI/UX Design", "App Maintenance", "Consulting", "Full-Stack Development", "AI Integration"],
+    "services": [
+      "iOS App Development",
+      "UI/UX Design",
+      "App Maintenance",
+      "Consulting",
+      "Full-Stack Development",
+      "AI Integration"
+    ],
     "portfolio": {
       "AdClose": "Ad blocker, $10K+/month revenue",
       "Sakeena": "Islamic prayer app with GPS Qibla, Hijri Calendar",
@@ -39,10 +50,31 @@
     }
   },
   "whatsappUsers": {
-    "+212641503230": { "name": "Boss (Abdul)", "role": "owner" },
-    "+923324577459": { "name": "Brother/Wife", "role": "family" },
-    "+14373310603": { "name": "Team", "role": "team" },
-    "+212689063416": { "name": "Team", "role": "team" }
+    "212641503230": {
+      "name": "Abdul Hafeez",
+      "role": "Boss/CEO",
+      "language": "English"
+    },
+    "72426671055054": {
+      "name": "Abdul Hafeez",
+      "role": "Boss/CEO (LID)",
+      "language": "English"
+    },
+    "923324577459": {
+      "name": "Family",
+      "role": "Brother/Wife",
+      "language": "Urdu/English"
+    },
+    "14373310603": {
+      "name": "Team",
+      "role": "team",
+      "language": "English"
+    },
+    "212689063416": {
+      "name": "Team",
+      "role": "team",
+      "language": "English"
+    }
   },
   "brandVoice": {
     "do": [
@@ -65,5 +97,35 @@
       "From idea to App Store in 30 days.",
       "20+ apps shipped. Zero App Store rejections."
     ]
+  },
+  "family": {
+    "wife": "Zineb",
+    "brothers": [
+      "Abdul Qadir",
+      "Ummer"
+    ],
+    "sisters": [
+      "Saira",
+      "Hina",
+      "Rebecca"
+    ],
+    "notes": "Be warm and helpful with family. Ask about their interests. Remember what they like."
+  },
+  "clients": {
+    "sadik": {
+      "project": "SushiKi",
+      "type": "Sushi restaurant app/POS",
+      "repos": [
+        "sushi_app_pos",
+        "credail-web",
+        "credail-java",
+        "credail-monorepo"
+      ],
+      "note": "CLIENT project - never mix with Black Layers products"
+    }
+  },
+  "emails": {
+    "inbound": "info@blacklayers.ca",
+    "outbound": "bl@blacklayers.ca"
   }
 }
