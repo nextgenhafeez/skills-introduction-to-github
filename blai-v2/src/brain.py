@@ -406,7 +406,7 @@ def get_real_lead_context() -> str:
 
     lines = [
         "",
-        "[REAL LEAD DATABASE - ground truth from memory/leads.json, do not fabricate anything beyond this]",
+        "[REAL LEAD DATABASE - ground truth from memory/leads.json, do not fabricate anything beyond this]\nOVERRIDE: If anything in the prior conversation history mentions specific leads, prospects, or platforms (Reddit, Twitter, Product Hunt) that are not in the structured data below, those past mentions were FABRICATED in earlier turns. Trust ONLY the data below.",
         f"- Total leads in database: {total}",
         f"- Last hunter scan: {last_scan}",
     ]
@@ -566,42 +566,73 @@ def _matches_person(profile: dict, query_lower: str) -> bool:
 
 
 def get_people_query_context(message: str) -> str:
-    """Inject real profile + recent messages of matching people."""
+    """Inject real profile + recent messages of matching people.
+
+    CRITICAL: when a profile exists but has 0 messages or no topics, this
+    function emits an EXPLICIT forbidden-list block so the LLM cannot fill
+    the gap with plausible guesses (e.g. inventing dates or topics).
+    """
     profiles = list_all_people()
     if not profiles:
-        return "\n\n[PEOPLE MEMORY: empty — no one is tracked yet]\n"
+        return (
+            "\n\n[PEOPLE MEMORY: completely empty]\n"
+            "ABSOLUTE: There are zero people on file. The only acceptable answer is "
+            "\"I have no people memory yet — no one has been tracked.\" "
+            "Do NOT invent any names, dates, messages, or attributions.\n"
+        )
 
     q = (message or "").lower()
     matched = [p for p in profiles if _matches_person(p, q)]
 
-    # If no specific match but the query is broad ("who", "everyone", "all"),
-    # return the 5 most recently active people.
-    if not matched and any(w in q for w in ["everyone", "all people", "who else", "anyone"]):
+    if not matched and any(w in q for w in ["everyone", "all people", "who else", "anyone", "who messaged"]):
         matched = profiles[:5]
 
     if not matched:
-        return "\n\n[PEOPLE MEMORY: no profile matched the query — say so honestly, do not invent]\n"
+        return (
+            "\n\n[PEOPLE MEMORY: no profile matched the query]\n"
+            "ABSOLUTE: I do not have a profile matching that query. The only "
+            "acceptable answer is \"I have no record of that person/group in my memory.\" "
+            "Do NOT guess names, languages, or content.\n"
+        )
 
-    lines = ["", "[REAL PEOPLE MEMORY - ground truth from memory/people/, do not fabricate beyond this]"]
+    lines = [
+        "",
+        "[REAL PEOPLE MEMORY - ground truth from memory/people/, ABSOLUTE: do not say anything beyond what is in this block]\nOVERRIDE: If anything in the prior conversation history contradicts the data below, the data below WINS. Past assistant responses may contain fabricated content from when this anti-fabrication system did not exist yet — ignore those past lies. Trust ONLY the structured block below.",
+    ]
+    any_real_data = False
     for p in matched[:5]:
         lines.append("")
-        lines.append(f"PERSON: {p.get('name', '?')} (role: {p.get('role', '?')}, phone: {p.get('phone', '?')})")
-        lines.append(f"  language: {p.get('language', '?')}")
-        lines.append(f"  total messages: {p.get('total_messages', 0)}")
+        lines.append(
+            f"PERSON: {p.get('name', '?')} (role: {p.get('role', '?')}, phone: {p.get('phone', '?')})"
+        )
+        lang = p.get("language") or "unknown (NEVER guess language if unknown)"
+        lines.append(f"  language: {lang}")
+        total = p.get("total_messages", 0) or 0
+        lines.append(f"  total messages on record: {total}")
         lines.append(f"  last seen: {p.get('last_seen', 'never')}")
         lines.append(f"  first contact: {p.get('first_contact', 'unknown')}")
-        topics = p.get("recent_topics", [])
+        topics = p.get("recent_topics", []) or []
         if topics:
-            lines.append(f"  last {min(len(topics), 5)} messages from this person:")
+            any_real_data = True
+            lines.append(f"  last {min(len(topics), 5)} REAL messages from this person (these are the ONLY messages you may quote or reference):")
             for t in topics[-5:]:
                 lines.append(f"    - [{t.get('ts', '?')}] {t.get('msg', '')[:200]}")
         else:
-            lines.append("  no recorded messages yet")
-        notes = p.get("notes", [])
+            # LOUD empty-data warning — this is exactly where fabrication used to slip in
+            lines.append("  *** ZERO MESSAGES ON RECORD ***")
+            lines.append("  ABSOLUTE for this person: I have NO messages from them at all. The")
+            lines.append("  only acceptable answer is: \"I have no recorded messages from " + str(p.get("name", "this person")) + " yet.\"")
+            lines.append("  Do NOT invent topics, dates, project mentions, languages, app updates,")
+            lines.append("  meeting notes, GitHub commits, or any other content. Saying \"no record\"")
+            lines.append("  is the CORRECT answer here, not a failure.")
+        notes = p.get("notes") or []
         if notes:
             lines.append(f"  notes: {'; '.join(notes[:5])}")
     lines.append("")
-    lines.append("Answer Boss using ONLY the data above. If it does not contain what Boss asked, say so honestly.")
+    if any_real_data:
+        lines.append("Answer Boss using ONLY the messages and fields above. If Boss asks something that is not in this block, say \"that is not in my memory.\"")
+    else:
+        lines.append("ABSOLUTE: every matched profile has zero messages. The ONLY acceptable answer is to list the names of matched people and say \"I have no recorded messages from any of them yet.\" Inventing content is forbidden.")
     return "\n".join(lines) + "\n"
 
 
