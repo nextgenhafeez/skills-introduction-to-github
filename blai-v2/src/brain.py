@@ -44,6 +44,125 @@ def get_groq_keys():
     return [key] if key else []
 
 
+# ---------- Provider state (smart switching) ----------
+# Tracks which provider is currently active so we don't hammer dead keys on
+# every request. When Gemini is exhausted we switch to Groq until a retry
+# window passes, then probe Gemini again to see if the quota has reset.
+
+STATE_FILE = MEMORY_DIR / "brain_state.json"
+GEMINI_RETRY_SECONDS = 30 * 60  # probe Gemini every 30 min while on Groq
+
+
+def get_brain_state() -> dict:
+    """Load provider state. Defaults to gemini active."""
+    if STATE_FILE.exists():
+        try:
+            return json.loads(STATE_FILE.read_text())
+        except Exception:
+            pass
+    return {"active_provider": "gemini", "gemini_exhausted_at": 0, "groq_exhausted_at": 0}
+
+
+def save_brain_state(state: dict):
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    STATE_FILE.write_text(json.dumps(state, indent=2))
+
+
+def mark_provider(name: str):
+    """Mark a provider as currently active (called on successful reply)."""
+    state = get_brain_state()
+    if state.get("active_provider") != name:
+        state["active_provider"] = name
+        save_brain_state(state)
+
+
+def mark_exhausted(name: str):
+    """Mark a provider as exhausted right now."""
+    state = get_brain_state()
+    state[f"{name}_exhausted_at"] = int(time.time())
+    if name == "gemini":
+        state["active_provider"] = "groq"
+    save_brain_state(state)
+
+
+def should_probe_gemini(state: dict) -> bool:
+    """While on Groq, retry Gemini periodically in case quota reset."""
+    last = state.get("gemini_exhausted_at", 0)
+    return (time.time() - last) > GEMINI_RETRY_SECONDS
+
+
+def _call_gemini(system_text: str, contents: list) -> str:
+    """Try each Gemini key once. Returns reply text or '' on total failure."""
+    keys = get_api_keys()
+    if not keys:
+        return ""
+    all_429 = True
+    for key in keys:
+        try:
+            resp = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}",
+                json={
+                    "systemInstruction": {"parts": [{"text": system_text}]},
+                    "contents": contents,
+                    "generationConfig": {"maxOutputTokens": 2048, "temperature": 0.7},
+                },
+                timeout=30,
+            )
+            if resp.status_code == 200:
+                return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+            if resp.status_code != 429:
+                all_429 = False
+        except Exception:
+            all_429 = False
+            continue
+    # Only mark exhausted if every key returned 429 (real quota wall)
+    if all_429:
+        mark_exhausted("gemini")
+    return ""
+
+
+def _call_groq(system_text: str, history: list, message: str) -> str:
+    """Try each Groq key once. Returns reply text or '' on total failure."""
+    keys = get_groq_keys()
+    if not keys:
+        return ""
+    groq_messages = [{"role": "system", "content": system_text}]
+    for msg in history:
+        role = "user" if msg["role"] == "user" else "assistant"
+        groq_messages.append({"role": role, "content": msg["content"]})
+    groq_messages.append({"role": "user", "content": message})
+
+    # Try each key against each model: 70b first (best quality), then 8b-instant
+    # as fallback. 8b-instant has its own separate TPD quota on Groq free tier,
+    # so this dramatically increases resilience when 70b is rate-limited.
+    GROQ_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+    all_429 = True
+    for groq_key in keys:
+        for model in GROQ_MODELS:
+            try:
+                resp = requests.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                    json={
+                        "model": model,
+                        "messages": groq_messages,
+                        "max_tokens": 2048,
+                        "temperature": 0.7,
+                    },
+                    timeout=30,
+                )
+                if resp.status_code == 200:
+                    return resp.json()["choices"][0]["message"]["content"]
+                if resp.status_code != 429:
+                    all_429 = False
+            except Exception:
+                all_429 = False
+                continue
+    if all_429:
+        mark_exhausted("groq")
+    return ""
+
+
 def get_conversation_memory(phone: str, limit: int = 10) -> list:
     """Load recent conversation history for a user."""
     conv_file = MEMORY_DIR / "conversations" / f"{phone}.json"
@@ -87,7 +206,7 @@ def get_context_for_user(phone: str) -> str:
         prefs_data = json.loads(prefs_file.read_text())
         if prefs_data:
             prefs = "\nBoss corrections/preferences:\n" + "\n".join(
-                f"- {p}" for p in prefs_data.get("corrections", [])[-5:]
+                f"- {p}" for p in prefs_data.get("corrections", [])[-15:]
             )
 
     # Load today's scorecard context
@@ -108,6 +227,146 @@ def get_context_for_user(phone: str) -> str:
         knowledge_summary += "\nBoss corrections: " + "; ".join(corrections[-3:])
 
     return f"Speaking with: {name} ({role}, {phone}){prefs}{daily_context}{knowledge_summary}"
+
+
+
+# ---------- Self-improvement: correction detection + persistence ----------
+# When Boss corrects BLAI ("no", "wrong", "don't", "actually", "never",
+# "always", "remember"), the message is saved to preferences.json so it
+# becomes a permanent rule loaded into every future conversation context.
+# This is how BLAI gets smarter over time without manual prompt editing.
+
+CORRECTION_SIGNALS = [
+    "no ", "wrong", "don't", "do not", "stop ", "actually", "instead",
+    "never ", "always ", "remember", "important", "correction", "fix this",
+]
+BOSS_PHONES = {"212641503230", "72426671055054"}
+
+
+def is_boss(phone: str) -> bool:
+    return phone in BOSS_PHONES
+
+
+def looks_like_correction(message: str) -> bool:
+    m = (message or "").lower().strip()
+    if len(m) < 4:
+        return False
+    return any(sig in m for sig in CORRECTION_SIGNALS)
+
+
+def save_boss_correction(text: str):
+    """Append a Boss correction to preferences.json (deduped, capped)."""
+    text = (text or "").strip()
+    if not text:
+        return
+    f = MEMORY_DIR / "preferences.json"
+    data = {"corrections": []}
+    if f.exists():
+        try:
+            data = json.loads(f.read_text())
+        except Exception:
+            pass
+    corrections = data.get("corrections", [])
+    if text in corrections:
+        return  # already learned this one
+    corrections.append(text)
+    data["corrections"] = corrections[-50:]  # rolling window of 50 lessons
+    data["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(json.dumps(data, indent=2))
+
+
+# ---------- Self-introspection: real runtime state on demand ----------
+# When Boss asks technical questions about BLAI itself ("which model",
+# "what api key", "your status", "diagnose yourself"), inject the REAL
+# state into context so BLAI answers from facts, not from the prompt.
+
+INTROSPECTION_SIGNALS = [
+    "which model", "what model", "which ai", "what ai",
+    "which api", "what api", "which key", "which provider",
+    "your status", "are you using", "are you running",
+    "diagnose yourself", "self status", "brain status",
+    "groq or gemini", "gemini or groq",
+]
+
+
+def looks_like_introspection(message: str) -> bool:
+    m = (message or "").lower()
+    return any(sig in m for sig in INTROSPECTION_SIGNALS)
+
+
+def get_self_status() -> str:
+    """Return BLAI's real runtime state. Source of truth for self-questions."""
+    state = get_brain_state()
+    gemini_keys = get_api_keys()
+    groq_keys = get_groq_keys()
+    active = state.get("active_provider", "unknown")
+    gem_exh = state.get("gemini_exhausted_at", 0)
+    groq_exh = state.get("groq_exhausted_at", 0)
+
+    def fmt(ts):
+        if not ts:
+            return "never"
+        return time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(ts))
+
+    lines = [
+        "",
+        "[REAL-TIME SELF STATUS - answer Boss questions about model/keys/state from THIS, not from memory]",
+        "- Active provider RIGHT NOW: " + active,
+        "- Gemini: " + str(len(gemini_keys)) + " keys loaded, model gemini-2.5-flash, last exhausted: " + fmt(gem_exh),
+        "- Groq: " + str(len(groq_keys)) + " keys loaded, cascade llama-3.3-70b-versatile -> llama-3.1-8b-instant, last exhausted: " + fmt(groq_exh),
+        "- This very reply you are generating now is being served by: " + active,
+        "- State file: memory/brain_state.json",
+        "- Switching rule: try Gemini first; on quota fall back to Groq; probe Gemini every 30 min while on Groq to detect quota reset; switch back automatically.",
+    ]
+    return "\n\n" + "\n".join(lines)
+
+
+
+
+# ---------- Real URL verification (anti-hallucination tool) ----------
+# Boss asked BLAI about a URL and BLAI invented a fake "GitHub Pages is
+# disabled" diagnosis without running any command. To prevent that, when a
+# message contains a URL, brain.py runs a real HTTP HEAD via curl and injects
+# the actual status code into the prompt as ground truth.
+import re
+import subprocess as _subprocess
+
+URL_REGEX = re.compile(r"https?://[^\s)>\]'\"]+")
+
+
+def extract_urls(message: str) -> list:
+    if not message:
+        return []
+    return URL_REGEX.findall(message)[:3]  # cap at 3 to keep prompt small
+
+
+def url_check(url: str) -> str:
+    """Run a real HTTP HEAD with curl. Returns a status string for context."""
+    try:
+        result = _subprocess.run(
+            [
+                "curl", "-sS", "-o", "/dev/null", "-L",
+                "-w", "HTTP %{http_code} | final=%{url_effective} | size=%{size_download}",
+                "--max-time", "8",
+                url,
+            ],
+            capture_output=True, text=True, timeout=10,
+        )
+        return result.stdout.strip() or ("ERROR: " + result.stderr.strip()[:200])
+    except Exception as e:
+        return "ERROR: " + str(e)[:200]
+
+
+def get_url_check_context(message: str) -> str:
+    urls = extract_urls(message)
+    if not urls:
+        return ""
+    lines = ["", "[REAL URL CHECK RESULTS - cite these as ground truth, do not invent anything else]"]
+    for u in urls:
+        lines.append("- " + u)
+        lines.append("  " + url_check(u))
+    return "\n".join(lines)
 
 
 def think(phone: str, message: str, image_data: bytes = None) -> str:
@@ -169,65 +428,54 @@ def think(phone: str, message: str, image_data: bytes = None) -> str:
     # Save user message
     save_conversation(phone, "user", message)
 
-    # Try each API key until one works
-    for i, key in enumerate(keys):
-        try:
-            resp = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}",
-                json={
-                    "systemInstruction": {"parts": [{"text": system_text}]},
-                    "contents": contents,
-                    "generationConfig": {
-                        "maxOutputTokens": 2048,
-                        "temperature": 0.7
-                    }
-                },
-                timeout=30
-            )
+    # SELF-IMPROVEMENT: if Boss is correcting us, persist the lesson forever.
+    if is_boss(phone) and looks_like_correction(message):
+        save_boss_correction(message)
 
-            if resp.status_code == 200:
-                data = resp.json()
-                reply = data["candidates"][0]["content"]["parts"][0]["text"]
-                # Save assistant response
-                save_conversation(phone, "assistant", reply)
-                return reply
-            elif resp.status_code == 429:
-                # Rate limited — try next key
-                continue
-            else:
-                continue
+    # SELF-INTROSPECTION: if Boss asks about our model/state, inject real facts
+    # into the system prompt so BLAI answers from runtime truth, not from memory.
+    if is_boss(phone) and looks_like_introspection(message):
+        system_text = system_text + get_self_status()
 
-        except Exception as e:
-            continue
+    # Anti-hallucination: if the message contains a URL, fetch real HTTP status
+    # via curl and inject as ground truth. Stops BLAI from inventing fake URL diagnoses.
+    _url_ctx = get_url_check_context(message)
+    if _url_ctx:
+        system_text = system_text + _url_ctx
 
-    # All Gemini keys exhausted — try Groq as fallback (fast, free tier, 4 keys)
-    groq_messages = [{"role": "system", "content": system_text}]
-    for msg in history:
-        role = "user" if msg["role"] == "user" else "assistant"
-        groq_messages.append({"role": role, "content": msg["content"]})
-    groq_messages.append({"role": "user", "content": message})
+    # Smart provider switching:
+    #   - If Gemini is active, try it first; fall back to Groq on total failure.
+    #   - If Groq is active (Gemini was exhausted), skip Gemini until the retry
+    #     window passes, then probe it to see if the quota reset.
+    state = get_brain_state()
+    active = state.get("active_provider", "gemini")
 
-    for groq_key in get_groq_keys():
-        try:
-            resp = requests.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-                json={
-                    "model": "llama-3.3-70b-versatile",
-                    "messages": groq_messages,
-                    "max_tokens": 2048,
-                    "temperature": 0.7
-                },
-                timeout=30
-            )
-            if resp.status_code == 200:
-                reply = resp.json()["choices"][0]["message"]["content"]
-                save_conversation(phone, "assistant", reply)
-                return reply
-            elif resp.status_code == 429:
-                continue
-        except Exception:
-            continue
+    try_gemini_first = (active == "gemini") or should_probe_gemini(state)
+
+    if try_gemini_first:
+        reply = _call_gemini(system_text, contents)
+        if reply:
+            mark_provider("gemini")
+            save_conversation(phone, "assistant", reply)
+            return reply
+        # Gemini failed — fall through to Groq
+        reply = _call_groq(system_text, history, message)
+        if reply:
+            mark_provider("groq")
+            save_conversation(phone, "assistant", reply)
+            return reply
+    else:
+        # Currently on Groq, retry window hasn't passed — go straight to Groq
+        reply = _call_groq(system_text, history, message)
+        if reply:
+            save_conversation(phone, "assistant", reply)
+            return reply
+        # Groq also failed — last-ditch Gemini probe
+        reply = _call_gemini(system_text, contents)
+        if reply:
+            mark_provider("gemini")
+            save_conversation(phone, "assistant", reply)
+            return reply
 
     return ""
 
