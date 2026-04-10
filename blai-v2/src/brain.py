@@ -17,8 +17,8 @@ SYSTEM_PROMPT = (CONFIG_DIR / "system_prompt.txt").read_text()
 IDENTITY = json.loads((CONFIG_DIR / "identity.json").read_text())
 KNOWLEDGE = json.loads((CONFIG_DIR / "knowledge.json").read_text())
 
-# Skill router for on-demand skill loading
-from src.skill_router import find_relevant_skills
+# Skill router for on-demand skill loading + real skill execution
+from src.skill_router import find_relevant_skills, find_real_skill, execute_real_skill
 
 
 def get_api_keys():
@@ -27,8 +27,20 @@ def get_api_keys():
     if keys_file.exists():
         data = json.loads(keys_file.read_text())
         return data.get("gemini", [])
-    # Fallback to env
     key = os.environ.get("GOOGLE_API_KEY", os.environ.get("GEMINI_API_KEY", ""))
+    return [key] if key else []
+
+
+def get_groq_keys():
+    """Load all Groq API keys for rotation (fallback when Gemini is exhausted)."""
+    keys_file = CONFIG_DIR / "api_keys.json"
+    if keys_file.exists():
+        data = json.loads(keys_file.read_text())
+        groq = data.get("groq", [])
+        if isinstance(groq, str):
+            return [groq] if groq else []
+        return groq
+    key = os.environ.get("GROQ_API_KEY", "")
     return [key] if key else []
 
 
@@ -112,8 +124,21 @@ def think(phone: str, message: str, image_data: bytes = None) -> str:
     history = get_conversation_memory(phone)
     context = get_context_for_user(phone)
 
+    # Check if this message triggers a real executable skill
+    real_module, real_func = find_real_skill(message)
+    real_skill_result = ""
+    if real_module:
+        try:
+            real_skill_result = execute_real_skill(real_module, real_func)
+        except Exception:
+            real_skill_result = ""
+
     # Load relevant skill knowledge based on message content
     skill_knowledge = find_relevant_skills(message)
+
+    # If a real skill produced output, include it as context for the LLM
+    if real_skill_result:
+        skill_knowledge += f"\n\nREAL SKILL OUTPUT ({real_module}.{real_func}):\n{real_skill_result}"
 
     # Build messages for Gemini
     contents = []
@@ -175,7 +200,35 @@ def think(phone: str, message: str, image_data: bytes = None) -> str:
         except Exception as e:
             continue
 
-    # Don't send error messages to WhatsApp — just stay silent
+    # All Gemini keys exhausted — try Groq as fallback (fast, free tier, 4 keys)
+    groq_messages = [{"role": "system", "content": system_text}]
+    for msg in history:
+        role = "user" if msg["role"] == "user" else "assistant"
+        groq_messages.append({"role": role, "content": msg["content"]})
+    groq_messages.append({"role": "user", "content": message})
+
+    for groq_key in get_groq_keys():
+        try:
+            resp = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": groq_messages,
+                    "max_tokens": 2048,
+                    "temperature": 0.7
+                },
+                timeout=30
+            )
+            if resp.status_code == 200:
+                reply = resp.json()["choices"][0]["message"]["content"]
+                save_conversation(phone, "assistant", reply)
+                return reply
+            elif resp.status_code == 429:
+                continue
+        except Exception:
+            continue
+
     return ""
 
 
@@ -195,6 +248,26 @@ def think_simple(prompt: str) -> str:
             )
             if resp.status_code == 200:
                 return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+            elif resp.status_code == 429:
+                continue
+        except:
+            continue
+
+    # Groq fallback (4 keys rotation)
+    for groq_key in get_groq_keys():
+        try:
+            resp = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
+                    "max_tokens": 4096, "temperature": 0.7
+                },
+                timeout=60
+            )
+            if resp.status_code == 200:
+                return resp.json()["choices"][0]["message"]["content"]
             elif resp.status_code == 429:
                 continue
         except:
