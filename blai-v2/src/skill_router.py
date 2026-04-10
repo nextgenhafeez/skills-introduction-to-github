@@ -34,6 +34,12 @@ SKILL_MAP = {
 
     # Video & image
     "video": "SKILL-video-creator.md",
+    "trending": "SKILL-content-engine.md",
+    "trend": "SKILL-content-engine.md",
+    "promote": "SKILL-content-engine.md",
+    "comments": "SKILL-content-engine.md",
+    "draft": "SKILL-content-engine.md",
+
     "kling": "SKILL-kling-video.md",
     "image": "SKILL-image-creator.md",
     "graphic": "SKILL-image-creator.md",
@@ -151,6 +157,40 @@ REAL_SKILL_MAP = {
     "kling status": ("kling_video", "list_recent_tasks"),
     "video stats": ("kling_video", "list_recent_tasks"),
     "list videos": ("kling_video", "list_recent_tasks"),
+
+
+    # Trending intelligence
+    "trending": ("trending", "get_trending_digest"),
+    "what is trending": ("trending", "get_trending_digest"),
+    "whats trending": ("trending", "get_trending_digest"),
+    "trends": ("trending", "get_trending_digest"),
+    "trending now": ("trending", "get_trending_digest"),
+    "tech trends": ("trending", "get_trending_digest"),
+
+    # Project registry
+    "list projects": ("project_registry", "list_projects"),
+    "show projects": ("project_registry", "list_projects"),
+    "what projects": ("project_registry", "list_projects"),
+    "register projects": ("project_registry", "bootstrap_from_identity"),
+    "next project to promote": ("project_registry", "pick_next_to_promote"),
+
+    # Content strategist
+    "draft post": ("content_strategist", "draft_post"),
+    "draft daily": ("content_strategist", "draft_daily_batch"),
+    "draft daily batch": ("content_strategist", "draft_daily_batch"),
+    "daily content": ("content_strategist", "draft_daily_batch"),
+    "promote blacklayers": ("content_strategist", "draft_post"),
+    "promote website": ("content_strategist", "draft_post"),
+    "list drafts": ("content_strategist", "list_drafts"),
+    "show drafts": ("content_strategist", "list_drafts"),
+
+    # Comment engine
+    "check comments": ("comment_engine", "list_comments_inbox"),
+    "comments inbox": ("comment_engine", "list_comments_inbox"),
+    "review comments": ("comment_engine", "list_comments_inbox"),
+    "draft reply": ("comment_engine", "draft_reply"),
+    "pending replies": ("comment_engine", "list_pending_replies"),
+    "comment drafts": ("comment_engine", "list_pending_replies"),
 
     # Real social posting
     "post to social": ("social_poster_real", "generate_and_post"),

@@ -827,44 +827,109 @@ def think(phone: str, message: str, image_data: bytes = None) -> str:
     return ""
 
 
-def think_simple(prompt: str) -> str:
-    """Simple one-shot call for background tasks (no conversation context)."""
-    keys = get_api_keys()
-    for key in keys:
-        try:
-            resp = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}",
-                json={
-                    "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
-                    "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                    "generationConfig": {"maxOutputTokens": 4096, "temperature": 0.7}
-                },
-                timeout=60
-            )
-            if resp.status_code == 200:
-                return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-            elif resp.status_code == 429:
-                continue
-        except:
-            continue
+# Slim system prompt for background tasks. think_simple is used by content
+# generation, sentiment classification, and other one-shot tasks that don't
+# need the full anti-fabrication scaffolding. Keeping this short prevents
+# Groq's 6000 TPM per-request ceiling from rejecting every call.
+BACKGROUND_SYSTEM_PROMPT = (
+    "You are BLAI, the AI working for Black Layers (blacklayers.ca), an iOS "
+    "app development company by Abdul Hafeez. Brand voice: confident but "
+    "humble, no corporate jargon, no fake stats. NEVER fabricate facts, "
+    "stats, dates, project names, or client names. If you don't know "
+    "something, say so. Output only what was asked — no preamble, no "
+    "'Here is the draft:', no quotes around the result."
+)
 
-    # Groq fallback (4 keys rotation)
-    for groq_key in get_groq_keys():
+
+def think_simple(prompt: str) -> str:
+    """One-shot call for background tasks. Mirrors the same Gemini -> Groq
+    70b -> Groq 8b-instant cascade as the main think() path, with a slim
+    background system prompt."""
+    sys_text = BACKGROUND_SYSTEM_PROMPT
+
+    # Pass 1: Gemini (only if not marked exhausted)
+    state = get_brain_state()
+    active = state.get("active_provider", "gemini")
+    if active == "gemini" or should_probe_gemini(state):
+        keys = get_api_keys()
+        all_429 = True
+        for key in keys:
+            try:
+                resp = requests.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}",
+                    json={
+                        "systemInstruction": {"parts": [{"text": sys_text}]},
+                        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                        "generationConfig": {"maxOutputTokens": 1500, "temperature": 0.7},
+                    },
+                    timeout=30,
+                )
+                if resp.status_code == 200:
+                    mark_provider("gemini")
+                    return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+                if resp.status_code != 429:
+                    all_429 = False
+            except Exception:
+                all_429 = False
+                continue
+        if all_429:
+            mark_exhausted("gemini")
+
+    # Pass 2: Groq 70b (full prompt) on every key
+    keys = get_groq_keys()
+    all_429 = True
+    for groq_key in keys:
         try:
             resp = requests.post(
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
                 json={
                     "model": "llama-3.3-70b-versatile",
-                    "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
-                    "max_tokens": 4096, "temperature": 0.7
+                    "messages": [
+                        {"role": "system", "content": sys_text},
+                        {"role": "user", "content": prompt[:6000]},
+                    ],
+                    "max_tokens": 1500,
+                    "temperature": 0.7,
                 },
-                timeout=60
+                timeout=30,
             )
             if resp.status_code == 200:
+                mark_provider("groq")
                 return resp.json()["choices"][0]["message"]["content"]
-            elif resp.status_code == 429:
-                continue
-        except:
+            if resp.status_code not in (429, 413):
+                all_429 = False
+        except Exception:
+            all_429 = False
             continue
+
+    # Pass 3: Groq 8b-instant with TRIMMED prompt (stay under 6k TPM ceiling)
+    short_prompt = prompt[:3500]
+    for groq_key in keys:
+        try:
+            resp = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.1-8b-instant",
+                    "messages": [
+                        {"role": "system", "content": sys_text},
+                        {"role": "user", "content": short_prompt},
+                    ],
+                    "max_tokens": 800,
+                    "temperature": 0.7,
+                },
+                timeout=30,
+            )
+            if resp.status_code == 200:
+                mark_provider("groq")
+                return resp.json()["choices"][0]["message"]["content"]
+            if resp.status_code not in (429, 413):
+                all_429 = False
+        except Exception:
+            all_429 = False
+            continue
+
+    if all_429:
+        mark_exhausted("groq")
     return ""
