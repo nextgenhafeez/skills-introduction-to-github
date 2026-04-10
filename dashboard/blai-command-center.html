@@ -668,6 +668,159 @@
   </div>
 </div>
 
+<!-- API Key Status -->
+<div style="background:var(--bg-card);border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid var(--border)">
+  <div style="font-size:18px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+    <span style="font-size:22px">&#9889;</span> API Key Status
+    <span id="api-refresh" style="font-size:12px;color:var(--muted);margin-left:auto;cursor:pointer" onclick="checkApiStatus()">&#8635; Refresh</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+    <!-- Gemini -->
+    <div style="background:var(--bg-card-2);border-radius:12px;padding:16px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-weight:600;font-size:15px">Gemini AI</span>
+        <span id="gemini-badge" style="font-size:11px;padding:3px 10px;border-radius:20px;background:var(--yellow-bg);color:var(--yellow)">Checking...</span>
+      </div>
+      <div style="font-size:32px;font-weight:800" id="gemini-count">-/7</div>
+      <div style="font-size:12px;color:var(--muted)">keys active</div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6" id="gemini-details">
+        <div>Model: <b style="color:var(--cyan)">gemini-2.5-flash</b></div>
+        <div>Provider: <b>Google AI Studio</b></div>
+        <div>Tier: Free (1,500 req/day/key)</div>
+        <div>Total capacity: <b>10,500 req/day</b></div>
+        <div>Resets: <b>08:00 AM</b> Morocco time</div>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--muted);opacity:0.6" id="gemini-keys-list"></div>
+    </div>
+    <!-- Groq -->
+    <div style="background:var(--bg-card-2);border-radius:12px;padding:16px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-weight:600;font-size:15px">Groq AI</span>
+        <span id="groq-badge" style="font-size:11px;padding:3px 10px;border-radius:20px;background:var(--yellow-bg);color:var(--yellow)">Checking...</span>
+      </div>
+      <div style="font-size:32px;font-weight:800" id="groq-count">-/4</div>
+      <div style="font-size:12px;color:var(--muted)">keys active</div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6" id="groq-details">
+        <div>Model: <b style="color:var(--purple)">llama-3.3-70b-versatile</b></div>
+        <div>Provider: <b>Groq Cloud (LPU)</b></div>
+        <div>Tier: Free (14,400 req/day/key)</div>
+        <div>Total capacity: <b>57,600 req/day</b></div>
+        <div>Resets: <b>08:00 AM</b> Morocco time</div>
+        <div>Speed: <b style="color:var(--green)">~100ms</b> (fastest LLM)</div>
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--muted);opacity:0.6" id="groq-keys-list"></div>
+    </div>
+    <!-- WhatsApp -->
+    <div style="background:var(--bg-card-2);border-radius:12px;padding:16px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-weight:600;font-size:15px">WhatsApp</span>
+        <span id="wa-badge" style="font-size:11px;padding:3px 10px;border-radius:20px;background:var(--green-bg);color:var(--green)">Connected</span>
+      </div>
+      <div style="font-size:32px;font-weight:800" id="wa-uptime">-</div>
+      <div style="font-size:12px;color:var(--muted)">uptime</div>
+      <div style="margin-top:8px;font-size:12px;color:var(--muted)" id="wa-restarts">PM2 auto-restarts on disconnect</div>
+    </div>
+    <!-- Make.com -->
+    <div style="background:var(--bg-card-2);border-radius:12px;padding:16px;border:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-weight:600;font-size:15px">Make.com</span>
+        <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:var(--green-bg);color:var(--green)">Ready</span>
+      </div>
+      <div style="font-size:32px;font-weight:800">5</div>
+      <div style="font-size:12px;color:var(--muted)">platforms connected</div>
+      <div style="margin-top:8px;font-size:12px;color:var(--muted)">YouTube, Twitter, TikTok, Facebook, Instagram</div>
+    </div>
+  </div>
+</div>
+<script>
+async function checkApiStatus() {
+  try {
+    // Check health file for WhatsApp status
+    const h = await fetch('/blai-v2/.health').then(r=>r.json()).catch(()=>null);
+    if (h) {
+      const up = Math.round(h.uptime || 0);
+      document.getElementById('wa-uptime').textContent = up > 60 ? Math.round(up/60)+'m' : up+'s';
+      document.getElementById('wa-badge').textContent = h.status === 'alive' || h.status === 'ready' ? 'Connected' : h.status;
+      document.getElementById('wa-badge').style.background = h.status === 'alive' || h.status === 'ready' ? 'var(--green-bg)' : 'var(--red-bg)';
+      document.getElementById('wa-badge').style.color = h.status === 'alive' || h.status === 'ready' ? 'var(--green)' : 'var(--red)';
+    }
+  } catch(e) {}
+
+  // Check API keys by testing one from each provider
+  // Load keys from server config (do not hardcode here)
+  let geminiKeys = [];
+  try {
+    const cfg = await fetch('./api_keys.json').then(r=>r.json()).catch(()=>null);
+    if (cfg && cfg.gemini) {
+      geminiKeys = cfg.gemini.map((k,i) => ({name:'Account '+(i+1), key:k}));
+    }
+  } catch(e) {}
+  let geminiActive = 0;
+  let geminiHtml = '';
+  for (const k of geminiKeys) {
+    try {
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+k.key, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:'hi'}]}],generationConfig:{maxOutputTokens:5}})
+      });
+      const ok = r.status === 200;
+      if (ok) geminiActive++;
+      const statusText = ok ? 'READY' : r.status === 429 ? 'QUOTA EXCEEDED' : 'ERROR '+r.status;
+      const color = ok ? 'var(--green)' : 'var(--red)';
+      geminiHtml += '<div style="display:flex;gap:6px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:'+color+';display:inline-block"></span> '+k.name+' ...'+k.key.slice(-4)+' <b style="color:'+color+'">'+statusText+'</b></div>';
+    } catch(e) { geminiHtml += '<div>'+k.name+' — network error</div>'; }
+  }
+  document.getElementById('gemini-count').textContent = geminiActive+'/7';
+  document.getElementById('gemini-badge').textContent = geminiActive > 0 ? geminiActive+' Active' : 'EXHAUSTED';
+  document.getElementById('gemini-badge').style.background = geminiActive > 0 ? 'var(--green-bg)' : 'var(--red-bg)';
+  document.getElementById('gemini-badge').style.color = geminiActive > 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('gemini-keys-list').innerHTML = geminiHtml;
+
+  // Show which model is currently active
+  const activeModel = geminiActive > 0 ? 'Gemini' : 'Groq (fallback)';
+  const activeColor = geminiActive > 0 ? 'var(--cyan)' : 'var(--purple)';
+  document.getElementById('gemini-details').innerHTML =
+    '<div>Model: <b style="color:var(--cyan)">gemini-2.5-flash</b></div>'+
+    '<div>Provider: <b>Google AI Studio</b></div>'+
+    '<div>Tier: Free (1,500 req/day/key)</div>'+
+    '<div>Total capacity: <b>10,500 req/day</b></div>'+
+    '<div>Resets: <b>08:00 AM</b> Morocco time</div>'+
+    '<div style="margin-top:6px;padding:4px 8px;border-radius:6px;background:'+(geminiActive>0?'var(--green-bg)':'var(--red-bg)')+';display:inline-block;font-weight:700;color:'+(geminiActive>0?'var(--green)':'var(--red)')+'">Brain using: '+activeModel+'</div>';
+
+  // Load Groq keys from server config
+  let groqKeys = [];
+  try {
+    const cfg = await fetch('./api_keys.json').then(r=>r.json()).catch(()=>null);
+    if (cfg && cfg.groq) {
+      const list = Array.isArray(cfg.groq) ? cfg.groq : [cfg.groq];
+      groqKeys = list.map((k,i) => ({name:'Key '+(i+1), key:k}));
+    }
+  } catch(e) {}
+  let groqActive = 0;
+  let groqHtml = '';
+  for (const k of groqKeys) {
+    try {
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST', headers:{'Authorization':'Bearer '+k.key,'Content-Type':'application/json'},
+        body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:'hi'}],max_tokens:5})
+      });
+      const ok = r.status === 200;
+      if (ok) groqActive++;
+      const statusText = ok ? 'READY' : r.status === 429 ? 'QUOTA EXCEEDED' : 'ERROR '+r.status;
+      const color = ok ? 'var(--green)' : 'var(--red)';
+      groqHtml += '<div style="display:flex;gap:6px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:'+color+';display:inline-block"></span> '+k.name+' ...'+k.key.slice(-4)+' <b style="color:'+color+'">'+statusText+'</b></div>';
+    } catch(e) { groqHtml += '<div>'+k.name+' — network error</div>'; }
+  }
+  document.getElementById('groq-count').textContent = groqActive+'/4';
+  document.getElementById('groq-badge').textContent = groqActive > 0 ? groqActive+' Active' : 'EXHAUSTED';
+  document.getElementById('groq-badge').style.background = groqActive > 0 ? 'var(--green-bg)' : 'var(--red-bg)';
+  document.getElementById('groq-badge').style.color = groqActive > 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('groq-keys-list').innerHTML = groqHtml;
+}
+checkApiStatus();
+setInterval(checkApiStatus, 60000);
+</script>
+
 <!-- World Rating -->
 <div class="rating-section">
   <div class="rating-header">

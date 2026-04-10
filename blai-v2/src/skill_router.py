@@ -1,14 +1,17 @@
 """
-Skill Router — Loads the right OpenClaw skill knowledge on demand.
-Instead of loading ALL 24 skills (68KB), loads only what's needed (~3KB).
+Skill Router — Loads reference skill knowledge AND dispatches to real executable skills.
+Reference skills = .md files with knowledge/instructions (~3KB each).
+Real skills = Python modules that actually DO things (Make.com, email, social posting).
 """
 
 import os
+import importlib
 from pathlib import Path
 
 SKILLS_DIR = Path(__file__).parent.parent / "reference-skills"
+REAL_SKILLS_DIR = Path(__file__).parent.parent / "skills"
 
-# Keyword → skill file mapping
+# Keyword → reference skill file mapping (knowledge injection)
 SKILL_MAP = {
     # Lead hunting & outreach
     "lead": "SKILL-lead-hunter.md",
@@ -80,11 +83,13 @@ SKILL_MAP = {
     "engagement": "SKILL-analytics-reporter.md",
     "scorecard": "SKILL-daily-scorecard.md",
 
-    # Automation
+    # Automation & Make.com
     "automate": "SKILL-n8n-automation.md",
     "make.com": "SKILL-n8n-automation.md",
+    "make com": "SKILL-n8n-automation.md",
     "webhook": "SKILL-n8n-automation.md",
     "n8n": "SKILL-n8n-automation.md",
+    "scenario": "SKILL-n8n-automation.md",
 
     # Self improvement
     "improve": "SKILL-self-improver.md",
@@ -106,6 +111,38 @@ SKILL_MAP = {
     "routine": "SKILL-daily-tasks.md",
     "daily": "SKILL-daily-tasks.md",
     "what did you do": "SKILL-daily-scorecard.md",
+}
+
+# Keyword → real executable skill (Python module.function)
+# These actually DO things — call APIs, send emails, post content
+REAL_SKILL_MAP = {
+    # Make.com management
+    "list scenarios": ("make_com", "list_scenarios"),
+    "run scenario": ("make_com", "run_scenario"),
+    "make.com status": ("make_com", "status"),
+    "make com status": ("make_com", "status"),
+    "list webhooks": ("make_com", "list_webhooks"),
+    "create webhook": ("make_com", "create_webhook"),
+
+    # Real lead hunting
+    "hunt leads": ("lead_hunter_real", "hunt_leads"),
+    "find leads": ("lead_hunter_real", "hunt_leads"),
+    "lead stats": ("lead_hunter_real", "get_lead_stats"),
+    "lead report": ("lead_hunter_real", "get_lead_stats"),
+    "setup lead webhook": ("lead_hunter_real", "setup_make_webhook"),
+
+    # Real email outreach
+    "send outreach": ("email_outreach", "send_ai_outreach"),
+    "outreach stats": ("email_outreach", "get_outreach_stats"),
+    "email stats": ("email_outreach", "get_outreach_stats"),
+    "setup email webhook": ("email_outreach", "setup_email_webhook"),
+
+    # Real social posting
+    "post to social": ("social_poster_real", "generate_and_post"),
+    "post content": ("social_poster_real", "generate_and_post"),
+    "posting stats": ("social_poster_real", "get_posting_stats"),
+    "platform status": ("social_poster_real", "list_configured_platforms"),
+    "setup social webhook": ("social_poster_real", "setup_platform_webhook"),
 }
 
 
@@ -141,3 +178,38 @@ def find_relevant_skills(message: str, max_skills: int = 2) -> str:
         return "\n\nRELEVANT SKILL KNOWLEDGE:\n" + "\n".join(skill_content)
 
     return ""
+
+
+def find_real_skill(message: str) -> tuple:
+    """
+    Check if a message should trigger a real executable skill.
+    Returns (module_name, function_name) or (None, None).
+    """
+    message_lower = message.lower()
+
+    # Check longest keywords first to avoid partial matches
+    sorted_keywords = sorted(REAL_SKILL_MAP.keys(), key=len, reverse=True)
+    for keyword in sorted_keywords:
+        if keyword in message_lower:
+            return REAL_SKILL_MAP[keyword]
+
+    return None, None
+
+
+def execute_real_skill(module_name: str, function_name: str, **kwargs) -> str:
+    """
+    Import and execute a real skill function.
+    Returns the result string or an error message.
+    """
+    try:
+        import sys
+        skills_dir = str(REAL_SKILLS_DIR.parent)
+        if skills_dir not in sys.path:
+            sys.path.insert(0, skills_dir)
+
+        module = importlib.import_module(f"skills.{module_name}")
+        func = getattr(module, function_name)
+        result = func(**kwargs) if kwargs else func()
+        return result
+    except Exception as e:
+        return f"Skill error ({module_name}.{function_name}): {e}"
