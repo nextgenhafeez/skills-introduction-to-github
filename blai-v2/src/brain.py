@@ -369,6 +369,242 @@ def get_url_check_context(message: str) -> str:
     return "\n".join(lines)
 
 
+
+
+# ---------- Real lead data injection (anti-hallucination for leads) ----------
+# When Boss or anyone asks about leads, inject the ACTUAL lead database stats
+# into the prompt so BLAI cannot fabricate fictional Reddit/Twitter prospects.
+
+LEAD_SIGNALS = [
+    "lead", "leads", "prospect", "prospects", "pipeline",
+    "update me about lead", "new lead", "any lead", "hunt lead", "find lead",
+]
+
+
+def looks_like_lead_question(message: str) -> bool:
+    m = (message or "").lower()
+    return any(sig in m for sig in LEAD_SIGNALS)
+
+
+def get_real_lead_context() -> str:
+    """Return REAL lead data from memory/leads.json — not a guess."""
+    leads_file = MEMORY_DIR / "leads.json"
+    if not leads_file.exists():
+        return (
+            "\n\n[REAL LEAD DATABASE - ground truth, do not fabricate anything beyond this]\n"
+            "- leads.json does not exist yet. Total leads: 0.\n"
+            "- If Boss asks, say: 'No leads in database yet. The lead hunter has not produced any results.'\n"
+        )
+    try:
+        data = json.loads(leads_file.read_text())
+    except Exception as e:
+        return f"\n\n[REAL LEAD DATABASE ERROR: {e} — tell Boss the file is unreadable]\n"
+
+    leads = data.get("leads", [])
+    last_scan = data.get("last_scan", "never")
+    total = len(leads)
+
+    lines = [
+        "",
+        "[REAL LEAD DATABASE - ground truth from memory/leads.json, do not fabricate anything beyond this]",
+        f"- Total leads in database: {total}",
+        f"- Last hunter scan: {last_scan}",
+    ]
+    if total == 0:
+        lines.append("- CRITICAL: there are ZERO leads. If Boss asks about leads, say exactly: 'No leads in database yet. Last scan: " + str(last_scan) + ". The lead hunter has not found any real prospects. Do you want me to run a fresh hunt?'")
+        lines.append("- DO NOT invent Reddit posts, Twitter handles, Product Hunt entries, HOT/WARM/COLD ratings, or any fictional prospect. That is fabrication and is forbidden.")
+    else:
+        lines.append(f"- First 5 real leads (cite from this list only, do not invent):")
+        for i, lead in enumerate(leads[:5], 1):
+            lines.append(f"  {i}. {json.dumps(lead)[:300]}")
+    return "\n".join(lines) + "\n"
+
+
+
+
+# ---------- Persistent people memory ----------
+# Every incoming user message updates memory/people/<phone>.json with the
+# latest activity, so BLAI can be queried later about specific people:
+# "what did Sadik ask?", "any update from family?", "show messages from Saira".
+# This is the same anti-hallucination pattern as url_check / lead_check:
+# real data is injected into the prompt as ground truth.
+
+PEOPLE_DIR = MEMORY_DIR / "people"
+PEOPLE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _person_file(phone: str) -> Path:
+    return PEOPLE_DIR / f"{phone}.json"
+
+
+def update_person_memory(phone: str, message: str):
+    """Append a message to a person's profile. Auto-creates the profile."""
+    if not phone or not message:
+        return
+    f = _person_file(phone)
+    profile = {}
+    if f.exists():
+        try:
+            profile = json.loads(f.read_text())
+        except Exception:
+            profile = {}
+
+    # Hydrate name/role from identity.json on first contact (or refresh)
+    user_info = IDENTITY.get("whatsappUsers", {}).get(phone, {})
+    if not profile:
+        profile = {
+            "phone": phone,
+            "name": user_info.get("name", "Unknown"),
+            "role": user_info.get("role", "unknown"),
+            "language": user_info.get("language", "English"),
+            "first_contact": time.strftime("%Y-%m-%d"),
+            "total_messages": 0,
+            "recent_topics": [],
+            "notes": [],
+        }
+    else:
+        # Keep name/role current with identity.json (it's the source of truth)
+        if user_info.get("name"):
+            profile["name"] = user_info["name"]
+        if user_info.get("role"):
+            profile["role"] = user_info["role"]
+
+    profile["last_seen"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    profile["total_messages"] = profile.get("total_messages", 0) + 1
+
+    # Append a short snippet of this message; keep last 15 to avoid bloat
+    snippet = (message or "").strip().replace("\n", " ")
+    if len(snippet) > 200:
+        snippet = snippet[:200] + "..."
+    topics = profile.get("recent_topics", [])
+    topics.append({"ts": profile["last_seen"], "msg": snippet})
+    profile["recent_topics"] = topics[-15:]
+
+    f.write_text(json.dumps(profile, indent=2, ensure_ascii=False))
+
+
+def list_all_people() -> list:
+    """Return all known person profiles, sorted by last_seen desc."""
+    out = []
+    for fp in PEOPLE_DIR.glob("*.json"):
+        try:
+            out.append(json.loads(fp.read_text()))
+        except Exception:
+            continue
+    out.sort(key=lambda p: p.get("last_seen", ""), reverse=True)
+    return out
+
+
+# ---------- Person-query detection (cross-user lookups) ----------
+PERSON_QUERY_SIGNALS = [
+    "what did", "what has", "any update from", "any update on",
+    "what is", "what are", "show me messages", "show messages from",
+    "messages from", "asked me", "asking", "told you", "ask you",
+    "from family", "from client", "from team", "everyone", "all people",
+    "who else", "anyone else", "what about", "people memory", "memory of",
+]
+
+# Name/keyword aliases mapping to who we should look up
+PERSON_ALIASES = {
+    "sadik": ["sushiki", "sushi"],          # client phone may not be in identity yet
+    "saira": ["sister"],
+    "qadir": ["brother qadir", "kadir"],
+    "ummer": ["umer", "brother ummer"],
+    "hina": [],
+    "zam": ["wife", "zamzam", "zam zam"],
+    "rebecca": [],
+    "ayesha": [],
+    "majeed": ["dad", "father"],
+    "zineb": [],
+}
+
+ROLE_KEYWORDS = {
+    "family": ["family", "brother", "sister", "wife", "dad", "mom", "father", "mother"],
+    "client": ["client", "customer", "sushiki", "sadik"],
+    "team": ["team", "developer", "dev"],
+    "boss": ["boss", "abdul", "hafeez"],
+}
+
+
+def looks_like_person_query(message: str) -> bool:
+    m = (message or "").lower()
+    if any(sig in m for sig in PERSON_QUERY_SIGNALS):
+        return True
+    # Also trigger if a known name appears alongside "ask/say/want"
+    if any(verb in m for verb in ["ask", "said", "say", "want", "told"]):
+        for name in PERSON_ALIASES.keys():
+            if name in m:
+                return True
+    return False
+
+
+def _matches_person(profile: dict, query_lower: str) -> bool:
+    name = (profile.get("name") or "").lower()
+    role = (profile.get("role") or "").lower()
+    phone = profile.get("phone", "")
+
+    # Direct phone match
+    if phone and phone in query_lower:
+        return True
+    # Direct name fragment
+    for token in name.split():
+        if len(token) >= 3 and token in query_lower:
+            return True
+    # Alias match
+    for alias_root, extras in PERSON_ALIASES.items():
+        if alias_root in name:
+            if alias_root in query_lower:
+                return True
+            for x in extras:
+                if x in query_lower:
+                    return True
+    # Role keyword match (family, client, team)
+    for role_group, kws in ROLE_KEYWORDS.items():
+        if any(k in role for k in kws) and any(k in query_lower for k in kws):
+            return True
+    return False
+
+
+def get_people_query_context(message: str) -> str:
+    """Inject real profile + recent messages of matching people."""
+    profiles = list_all_people()
+    if not profiles:
+        return "\n\n[PEOPLE MEMORY: empty — no one is tracked yet]\n"
+
+    q = (message or "").lower()
+    matched = [p for p in profiles if _matches_person(p, q)]
+
+    # If no specific match but the query is broad ("who", "everyone", "all"),
+    # return the 5 most recently active people.
+    if not matched and any(w in q for w in ["everyone", "all people", "who else", "anyone"]):
+        matched = profiles[:5]
+
+    if not matched:
+        return "\n\n[PEOPLE MEMORY: no profile matched the query — say so honestly, do not invent]\n"
+
+    lines = ["", "[REAL PEOPLE MEMORY - ground truth from memory/people/, do not fabricate beyond this]"]
+    for p in matched[:5]:
+        lines.append("")
+        lines.append(f"PERSON: {p.get('name', '?')} (role: {p.get('role', '?')}, phone: {p.get('phone', '?')})")
+        lines.append(f"  language: {p.get('language', '?')}")
+        lines.append(f"  total messages: {p.get('total_messages', 0)}")
+        lines.append(f"  last seen: {p.get('last_seen', 'never')}")
+        lines.append(f"  first contact: {p.get('first_contact', 'unknown')}")
+        topics = p.get("recent_topics", [])
+        if topics:
+            lines.append(f"  last {min(len(topics), 5)} messages from this person:")
+            for t in topics[-5:]:
+                lines.append(f"    - [{t.get('ts', '?')}] {t.get('msg', '')[:200]}")
+        else:
+            lines.append("  no recorded messages yet")
+        notes = p.get("notes", [])
+        if notes:
+            lines.append(f"  notes: {'; '.join(notes[:5])}")
+    lines.append("")
+    lines.append("Answer Boss using ONLY the data above. If it does not contain what Boss asked, say so honestly.")
+    return "\n".join(lines) + "\n"
+
+
 def think(phone: str, message: str, image_data: bytes = None) -> str:
     """
     Send a message to Gemini and get a response.
@@ -428,6 +664,14 @@ def think(phone: str, message: str, image_data: bytes = None) -> str:
     # Save user message
     save_conversation(phone, "user", message)
 
+    # Persistent people memory: append this message to the sender's profile.
+    # Runs for EVERY user (Boss, family, clients, strangers) so the cross-user
+    # query layer below has real data to draw from.
+    try:
+        update_person_memory(phone, message)
+    except Exception:
+        pass
+
     # SELF-IMPROVEMENT: if Boss is correcting us, persist the lesson forever.
     if is_boss(phone) and looks_like_correction(message):
         save_boss_correction(message)
@@ -442,6 +686,17 @@ def think(phone: str, message: str, image_data: bytes = None) -> str:
     _url_ctx = get_url_check_context(message)
     if _url_ctx:
         system_text = system_text + _url_ctx
+
+    # Anti-hallucination: if the message is about leads, inject the REAL
+    # leads.json contents so BLAI cannot fabricate fictional prospects.
+    if looks_like_lead_question(message):
+        system_text = system_text + get_real_lead_context()
+
+    # People memory: if Boss is asking about someone else, inject their
+    # real profile + recent messages so BLAI cannot fabricate or claim
+    # ignorance when the data is right there on disk.
+    if is_boss(phone) and looks_like_person_query(message):
+        system_text = system_text + get_people_query_context(message)
 
     # Smart provider switching:
     #   - If Gemini is active, try it first; fall back to Groq on total failure.
