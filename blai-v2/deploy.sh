@@ -42,7 +42,7 @@ echo 'Dependencies installed'
 echo "[4/6] Setting up environment..."
 gcloud compute ssh $VM --zone=$ZONE --command="
 # Set env vars
-grep -q 'GOOGLE_API_KEY' ~/.bashrc || echo 'export GOOGLE_API_KEY=***REVOKED-KEY***' >> ~/.bashrc
+if [ -z \"\$GOOGLE_API_KEY\" ]; then echo 'ERROR: set GOOGLE_API_KEY env var on VM (~/.bashrc) before running BLAI' >&2; fi
 
 # Install pm2 for process management
 which pm2 > /dev/null 2>&1 || npm install -g pm2
