@@ -747,77 +747,71 @@ async function checkApiStatus() {
     }
   } catch(e) {}
 
-  // Check API keys by testing one from each provider
-  // Test each Gemini key with REAL generateContent call
-  const geminiKeys = [
-    {name:'Account 1', key:'REDACTED_SET_FROM_SERVER'},
-    {name:'Account 2', key:'REDACTED_SET_FROM_SERVER'},
-    {name:'Account 3', key:'REDACTED_SET_FROM_SERVER'},
-    {name:'Account 4', key:'REDACTED_SET_FROM_SERVER'},
-    {name:'Account 5', key:'REDACTED_SET_FROM_SERVER'},
-    {name:'Account 6', key:'REDACTED_SET_FROM_SERVER'},
-    {name:'Account 7', key:'REDACTED_SET_FROM_SERVER'}
-  ];
-  let geminiActive = 0;
-  let geminiHtml = '';
-  for (const k of geminiKeys) {
-    try {
-      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key='+k.key, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({contents:[{parts:[{text:'hi'}]}],generationConfig:{maxOutputTokens:5}})
-      });
-      const ok = r.status === 200;
-      if (ok) geminiActive++;
-      const statusText = ok ? 'READY' : r.status === 429 ? 'QUOTA EXCEEDED' : 'ERROR '+r.status;
-      const color = ok ? 'var(--green)' : 'var(--red)';
-      geminiHtml += '<div style="display:flex;gap:6px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:'+color+';display:inline-block"></span> '+k.name+' ...'+k.key.slice(-4)+' <b style="color:'+color+'">'+statusText+'</b></div>';
-    } catch(e) { geminiHtml += '<div>'+k.name+' — network error</div>'; }
+  // Fetch API status from server (no embedded keys — server tests them)
+  let snap = null;
+  try {
+    snap = await fetch('/api/status').then(r => r.json());
+  } catch(e) {
+    console.error('status fetch failed', e);
+    return;
   }
-  document.getElementById('gemini-count').textContent = geminiActive+'/7';
-  document.getElementById('gemini-badge').textContent = geminiActive > 0 ? geminiActive+' Active' : 'EXHAUSTED';
-  document.getElementById('gemini-badge').style.background = geminiActive > 0 ? 'var(--green-bg)' : 'var(--red-bg)';
-  document.getElementById('gemini-badge').style.color = geminiActive > 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('gemini-keys-list').innerHTML = geminiHtml;
 
-  // Show which model is currently active
-  const activeModel = geminiActive > 0 ? 'Gemini' : 'Groq (fallback)';
-  const activeColor = geminiActive > 0 ? 'var(--cyan)' : 'var(--purple)';
+  // ---------- Gemini ----------
+  const g = snap.gemini || {};
+  document.getElementById('gemini-count').textContent = (g.active || 0) + '/' + (g.total || 0);
+  const gBadge = document.getElementById('gemini-badge');
+  gBadge.textContent = (g.active || 0) > 0 ? (g.active + ' Active') : 'EXHAUSTED';
+  gBadge.style.background = (g.active || 0) > 0 ? 'var(--green-bg)' : 'var(--red-bg)';
+  gBadge.style.color = (g.active || 0) > 0 ? 'var(--green)' : 'var(--red)';
+  let gHtml = '';
+  for (const k of (g.keys || [])) {
+    const ok = k.status === 'READY';
+    const color = ok ? 'var(--green)' : 'var(--red)';
+    const label = k.status === 'QUOTA_EXCEEDED' ? 'QUOTA EXCEEDED' : k.status;
+    gHtml += '<div style="display:flex;gap:6px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:' + color + ';display:inline-block"></span> Account ' + k.n + ' ...' + k.suffix + ' <b style="color:' + color + '">' + label + '</b></div>';
+  }
+  document.getElementById('gemini-keys-list').innerHTML = gHtml;
+
+  const activeProvider = (snap.brain_state && snap.brain_state.active_provider) || ((g.active || 0) > 0 ? 'gemini' : 'groq');
+  const activeModel = activeProvider === 'gemini' ? 'Gemini' : 'Groq (fallback)';
   document.getElementById('gemini-details').innerHTML =
-    '<div>Model: <b style="color:var(--cyan)">gemini-2.5-flash-lite</b></div>'+
-    '<div>Provider: <b>Google AI Studio</b></div>'+
-    '<div>Tier: Free (1,000 req/day/project)</div>'+
-    '<div>Total capacity: <b>~7,000 req/day</b></div>'+
-    '<div>Resets: <b>~01:00 AM</b> Morocco (midnight PT)</div>'+
-    '<div style="color:var(--green);margin-top:4px">✓ 2.5-flash-lite (working)</div>'+
-    '<div style="margin-top:6px;padding:4px 8px;border-radius:6px;background:'+(geminiActive>0?'var(--green-bg)':'var(--red-bg)')+';display:inline-block;font-weight:700;color:'+(geminiActive>0?'var(--green)':'var(--red)')+'">Brain using: '+activeModel+'</div>';
+    '<div>Model: <b style="color:var(--cyan)">' + (g.model || 'gemini-2.5-flash-lite') + '</b></div>' +
+    '<div>Provider: <b>Google AI Studio</b></div>' +
+    '<div>Tier: Free (1,000 req/day/project)</div>' +
+    '<div>Total capacity: <b>~7,000 req/day</b></div>' +
+    '<div>Resets: <b>~01:00 AM</b> Morocco (midnight PT)</div>' +
+    '<div style="color:var(--green);margin-top:4px">✓ Server-side health check (no keys in browser)</div>' +
+    '<div style="margin-top:6px;padding:4px 8px;border-radius:6px;background:' + ((g.active || 0) > 0 ? 'var(--green-bg)' : 'var(--red-bg)') + ';display:inline-block;font-weight:700;color:' + ((g.active || 0) > 0 ? 'var(--green)' : 'var(--red)') + '">Brain using: ' + activeModel + '</div>';
 
-  // Test each Groq key with REAL chat completion call
-  const groqKeys = [
-    {name:'Key 1', key:'REDACTED_SET_FROM_SERVER'},
-    {name:'Key 2', key:'REDACTED_SET_FROM_SERVER'},
-    {name:'Key 3', key:'REDACTED_SET_FROM_SERVER'},
-    {name:'Key 4', key:'REDACTED_SET_FROM_SERVER'}
-  ];
-  let groqActive = 0;
-  let groqHtml = '';
-  for (const k of groqKeys) {
-    try {
-      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method:'POST', headers:{'Authorization':'Bearer '+k.key,'Content-Type':'application/json'},
-        body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'user',content:'hi'}],max_tokens:5})
-      });
-      const ok = r.status === 200;
-      if (ok) groqActive++;
-      const statusText = ok ? 'READY' : r.status === 429 ? 'QUOTA EXCEEDED' : 'ERROR '+r.status;
-      const color = ok ? 'var(--green)' : 'var(--red)';
-      groqHtml += '<div style="display:flex;gap:6px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:'+color+';display:inline-block"></span> '+k.name+' ...'+k.key.slice(-4)+' <b style="color:'+color+'">'+statusText+'</b></div>';
-    } catch(e) { groqHtml += '<div>'+k.name+' — network error</div>'; }
+  // ---------- Groq ----------
+  const q = snap.groq || {};
+  document.getElementById('groq-count').textContent = (q.active || 0) + '/' + (q.total || 0);
+  const qBadge = document.getElementById('groq-badge');
+  qBadge.textContent = (q.active || 0) > 0 ? (q.active + ' Active') : 'EXHAUSTED';
+  qBadge.style.background = (q.active || 0) > 0 ? 'var(--green-bg)' : 'var(--red-bg)';
+  qBadge.style.color = (q.active || 0) > 0 ? 'var(--green)' : 'var(--red)';
+  let qHtml = '';
+  for (const k of (q.keys || [])) {
+    const ok = k.status === 'READY';
+    const color = ok ? 'var(--green)' : 'var(--red)';
+    const label = k.status === 'QUOTA_EXCEEDED' ? 'QUOTA EXCEEDED' : k.status;
+    qHtml += '<div style="display:flex;gap:6px;align-items:center"><span style="width:6px;height:6px;border-radius:50%;background:' + color + ';display:inline-block"></span> Key ' + k.n + ' ...' + k.suffix + ' <b style="color:' + color + '">' + label + '</b></div>';
   }
-  document.getElementById('groq-count').textContent = groqActive+'/4';
-  document.getElementById('groq-badge').textContent = groqActive > 0 ? groqActive+' Active' : 'EXHAUSTED';
-  document.getElementById('groq-badge').style.background = groqActive > 0 ? 'var(--green-bg)' : 'var(--red-bg)';
-  document.getElementById('groq-badge').style.color = groqActive > 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('groq-keys-list').innerHTML = groqHtml;
+  document.getElementById('groq-keys-list').innerHTML = qHtml;
+
+  // ---------- WhatsApp from snap ----------
+  if (snap.whatsapp) {
+    const up = snap.whatsapp.uptime_s || 0;
+    const upText = up > 60 ? Math.round(up/60) + 'm' : up + 's';
+    const waEl = document.getElementById('wa-uptime');
+    if (waEl) waEl.textContent = upText;
+    const waBadge = document.getElementById('wa-badge');
+    if (waBadge) {
+      waBadge.textContent = snap.whatsapp.connected ? 'Connected' : 'Disconnected';
+      waBadge.style.background = snap.whatsapp.connected ? 'var(--green-bg)' : 'var(--red-bg)';
+      waBadge.style.color = snap.whatsapp.connected ? 'var(--green)' : 'var(--red)';
+    }
+  }
 }
 checkApiStatus();
 setInterval(checkApiStatus, 60000);
