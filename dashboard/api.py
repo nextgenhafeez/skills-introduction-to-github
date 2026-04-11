@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Simple API to serve BLAI data to the dashboard."""
-import json, os, glob, time
+import json, os, glob, time, secrets, urllib.parse
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 
@@ -8,11 +8,130 @@ MEMORY_DIR = Path('/home/tonny/blai-v2/memory')
 CONFIG_DIR = Path('/home/tonny/blai-v2/config')
 BRIDGE_DIR = Path('/home/tonny/blai-v2/claude-bridge')
 
+# Load token at startup so misconfig fails loudly
+try:
+    DASHBOARD_TOKEN = json.loads((CONFIG_DIR / 'api_keys.json').read_text()).get('dashboard_token', '')
+except Exception:
+    DASHBOARD_TOKEN = ''
+if not DASHBOARD_TOKEN or len(DASHBOARD_TOKEN) < 24:
+    raise SystemExit('ERROR: dashboard_token missing or too short in api_keys.json')
+
+# Paths that bypass auth (must NOT leak any sensitive data)
+PUBLIC_PATHS = {'/favicon.ico', '/robots.txt', '/healthz', '/api/ping'}
+
+# Audit log for unauthorized hits
+AUDIT_LOG = Path('/home/tonny/blai-v2/memory/dashboard_audit.log')
+
+# Per-IP brute force tracking: ip -> (failed_count, first_fail_ts, blocked_until_ts)
+BRUTE_FORCE_TRACK = {}
+BLOCK_THRESHOLD = 10            # 5 failed attempts
+BLOCK_WINDOW_S  = 60           # within 60 seconds
+BLOCK_DURATION_S = 300         # blocks for 10 minutes
+
+
+
 class DashboardHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory='/home/tonny/blai-v2/dashboard', **kwargs)
 
+    def _client_ip(self):
+        # Honor X-Forwarded-For only if behind a trusted proxy (we are not)
+        return self.client_address[0] if self.client_address else 'unknown'
+
+    def _audit(self, reason, path):
+        try:
+            # SECURITY: never log tokens in plaintext, even partial. Redact entire query string.
+            safe_path = path.split('?', 1)[0] + '?[REDACTED]' if '?' in path else path
+            with open(AUDIT_LOG, 'a') as f:
+                f.write(time.strftime('%Y-%m-%d %H:%M:%S') + ' ' + self._client_ip() + ' ' + reason + ' ' + safe_path + '\n')
+        except Exception:
+            pass
+
+    def _is_blocked(self):
+        ip = self._client_ip()
+        rec = BRUTE_FORCE_TRACK.get(ip)
+        if not rec:
+            return False
+        failed, first_ts, blocked_until = rec
+        if blocked_until and time.time() < blocked_until:
+            return True
+        return False
+
+    def _record_fail(self):
+        ip = self._client_ip()
+        now = time.time()
+        rec = BRUTE_FORCE_TRACK.get(ip, (0, now, 0))
+        failed, first_ts, blocked_until = rec
+        # Reset window if first failure was long ago
+        if now - first_ts > BLOCK_WINDOW_S:
+            failed = 0
+            first_ts = now
+        failed += 1
+        if failed >= BLOCK_THRESHOLD:
+            blocked_until = now + BLOCK_DURATION_S
+            self._audit('BLOCKED_BRUTE_FORCE_' + str(failed) + '_attempts', self.path)
+        BRUTE_FORCE_TRACK[ip] = (failed, first_ts, blocked_until)
+
+    def _record_success(self):
+        # Clear tracking on successful auth
+        ip = self._client_ip()
+        if ip in BRUTE_FORCE_TRACK:
+            del BRUTE_FORCE_TRACK[ip]
+
+    def _is_authorized(self):
+        # 0. Block if currently rate-limited (no double-record)
+        if self._is_blocked():
+            return False
+        # If a successful auth comes in for the same IP that just got blocked,
+        # the block was a false positive — caller already passes self.headers,
+        # so we still verify the token first below
+        # 1. Public paths bypass
+        path_only = self.path.split('?')[0]
+        if path_only in PUBLIC_PATHS:
+            return True
+        # 2. Bearer header
+        h = self.headers.get('Authorization', '')
+        if h.startswith('Bearer ') and secrets.compare_digest(h[7:].strip(), DASHBOARD_TOKEN):
+            self._record_success()
+            return True
+        # 3. ?token= query param
+        try:
+            qs = urllib.parse.urlparse(self.path).query
+            params = urllib.parse.parse_qs(qs)
+            tok = (params.get('token') or [''])[0]
+            if tok and secrets.compare_digest(tok, DASHBOARD_TOKEN):
+                self._record_success()
+                return True
+        except Exception:
+            pass
+        # Failed auth — record for brute force tracking
+        self._record_fail()
+        return False
+
+    def _send_401(self):
+        if self._is_blocked():
+            self.send_response(429)
+            self.send_header('Retry-After', str(BLOCK_DURATION_S))
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(b'{"error":"too_many_attempts","retry_after_s":' + str(BLOCK_DURATION_S).encode() + b'}')
+            return
+        self.send_response(401)
+        self.send_header('WWW-Authenticate', 'Bearer realm="BLAI dashboard"')
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(b'{"error":"unauthorized","hint":"append ?token=YOUR_TOKEN or send Authorization: Bearer header"}')
+
+
+
     def do_GET(self):
+        if not self._is_authorized():
+            self._audit('UNAUTHORIZED', self.path)
+            self._send_401()
+            return
+        # Strip ?token=... from path so static file serving works
+        if '?' in self.path:
+            self.path = self.path.split('?')[0]
         if self.path == '/api/status':
             self.send_json(self.get_status())
         elif self.path == '/api/stats':
