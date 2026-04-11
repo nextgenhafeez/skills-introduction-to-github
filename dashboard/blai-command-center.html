@@ -684,11 +684,12 @@
       <div style="font-size:32px;font-weight:800" id="gemini-count">-/7</div>
       <div style="font-size:12px;color:var(--muted)">keys active</div>
       <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6" id="gemini-details">
-        <div>Model: <b style="color:var(--cyan)">gemini-2.5-flash</b></div>
+        <div>Model: <b style="color:var(--cyan)">gemini-2.5-flash-lite</b></div>
         <div>Provider: <b>Google AI Studio</b></div>
-        <div>Tier: Free (1,500 req/day/key)</div>
-        <div>Total capacity: <b>10,500 req/day</b></div>
-        <div>Resets: <b>08:00 AM</b> Morocco time</div>
+        <div>Tier: Free (1,000 req/day/project)</div>
+        <div>Total capacity: <b>~7,000 req/day</b></div>
+        <div>Resets: <b>~01:00 AM</b> Morocco (midnight PT)</div>
+        <div style="color:var(--green);margin-top:4px">✓ Switched to 2.5-flash-lite (real free tier)</div>
       </div>
       <div style="margin-top:8px;font-size:10px;color:var(--muted);opacity:0.6" id="gemini-keys-list"></div>
     </div>
@@ -747,19 +748,21 @@ async function checkApiStatus() {
   } catch(e) {}
 
   // Check API keys by testing one from each provider
-  // Load keys from server config (do not hardcode here)
-  let geminiKeys = [];
-  try {
-    const cfg = await fetch('./api_keys.json').then(r=>r.json()).catch(()=>null);
-    if (cfg && cfg.gemini) {
-      geminiKeys = cfg.gemini.map((k,i) => ({name:'Account '+(i+1), key:k}));
-    }
-  } catch(e) {}
+  // Test each Gemini key with REAL generateContent call
+  const geminiKeys = [
+    {name:'Account 1', key:'REDACTED_SET_FROM_SERVER'},
+    {name:'Account 2', key:'REDACTED_SET_FROM_SERVER'},
+    {name:'Account 3', key:'REDACTED_SET_FROM_SERVER'},
+    {name:'Account 4', key:'REDACTED_SET_FROM_SERVER'},
+    {name:'Account 5', key:'REDACTED_SET_FROM_SERVER'},
+    {name:'Account 6', key:'REDACTED_SET_FROM_SERVER'},
+    {name:'Account 7', key:'REDACTED_SET_FROM_SERVER'}
+  ];
   let geminiActive = 0;
   let geminiHtml = '';
   for (const k of geminiKeys) {
     try {
-      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+k.key, {
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key='+k.key, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({contents:[{parts:[{text:'hi'}]}],generationConfig:{maxOutputTokens:5}})
       });
@@ -780,22 +783,21 @@ async function checkApiStatus() {
   const activeModel = geminiActive > 0 ? 'Gemini' : 'Groq (fallback)';
   const activeColor = geminiActive > 0 ? 'var(--cyan)' : 'var(--purple)';
   document.getElementById('gemini-details').innerHTML =
-    '<div>Model: <b style="color:var(--cyan)">gemini-2.5-flash</b></div>'+
+    '<div>Model: <b style="color:var(--cyan)">gemini-2.5-flash-lite</b></div>'+
     '<div>Provider: <b>Google AI Studio</b></div>'+
-    '<div>Tier: Free (1,500 req/day/key)</div>'+
-    '<div>Total capacity: <b>10,500 req/day</b></div>'+
-    '<div>Resets: <b>08:00 AM</b> Morocco time</div>'+
+    '<div>Tier: Free (1,000 req/day/project)</div>'+
+    '<div>Total capacity: <b>~7,000 req/day</b></div>'+
+    '<div>Resets: <b>~01:00 AM</b> Morocco (midnight PT)</div>'+
+    '<div style="color:var(--green);margin-top:4px">✓ 2.5-flash-lite (working)</div>'+
     '<div style="margin-top:6px;padding:4px 8px;border-radius:6px;background:'+(geminiActive>0?'var(--green-bg)':'var(--red-bg)')+';display:inline-block;font-weight:700;color:'+(geminiActive>0?'var(--green)':'var(--red)')+'">Brain using: '+activeModel+'</div>';
 
-  // Load Groq keys from server config
-  let groqKeys = [];
-  try {
-    const cfg = await fetch('./api_keys.json').then(r=>r.json()).catch(()=>null);
-    if (cfg && cfg.groq) {
-      const list = Array.isArray(cfg.groq) ? cfg.groq : [cfg.groq];
-      groqKeys = list.map((k,i) => ({name:'Key '+(i+1), key:k}));
-    }
-  } catch(e) {}
+  // Test each Groq key with REAL chat completion call
+  const groqKeys = [
+    {name:'Key 1', key:'REDACTED_SET_FROM_SERVER'},
+    {name:'Key 2', key:'REDACTED_SET_FROM_SERVER'},
+    {name:'Key 3', key:'REDACTED_SET_FROM_SERVER'},
+    {name:'Key 4', key:'REDACTED_SET_FROM_SERVER'}
+  ];
   let groqActive = 0;
   let groqHtml = '';
   for (const k of groqKeys) {

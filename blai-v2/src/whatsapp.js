@@ -55,12 +55,15 @@ function isConversationActive(phone) {
 function activateConversation(phone) { activeConversations.set(phone, { lastMessage: Date.now(), active: true }); }
 function touchConversation(phone) { const c = activeConversations.get(phone); if (c && c.active) c.lastMessage = Date.now(); }
 
-async function callBrain(phone, message, imagePath) {
+async function callBrain(phone, message, imagePath, videoPath) {
   return new Promise(function(resolve) {
     const args = [BRAIN_SCRIPT, '--phone', phone, '--message', Buffer.from(message).toString('base64')];
     if (imagePath) args.push('--image', imagePath);
+    if (videoPath) args.push('--video', videoPath);
     const cmd = 'python3 ' + args.map(a => '"' + a + '"').join(' ');
-    exec(cmd, { timeout: 60000, maxBuffer: 1024 * 1024 }, function(error, stdout, stderr) {
+    // Longer timeout when a video is being transcribed (Whisper roundtrip)
+    const tmo = videoPath ? 180000 : 60000;
+    exec(cmd, { timeout: tmo, maxBuffer: 4 * 1024 * 1024 }, function(error, stdout, stderr) {
       if (error) { console.error('[Brain] Error:', stderr || error.message); resolve(null); }
       else resolve(stdout.trim());
     });
@@ -152,7 +155,9 @@ async function handleMessage(msg) {
     }
   }
 
-  if (!text) return;
+  // Allow video-only messages (no caption) — they still need to be transcribed
+  if (!text && !msg.message?.videoMessage) return;
+  if (!text && msg.message?.videoMessage) text = "[video]";
 
   console.log('[BLAI] Processing +' + phone + ': ' + text.substring(0, 50));
   writeHealth('processing');
@@ -169,8 +174,20 @@ async function handleMessage(msg) {
     } catch(e) { console.error('[BLAI] Image error:', e.message); }
   }
 
-  let reply = await callBrain(phone, text, imagePath);
+  // VIDEO support — download and pass to brain so Whisper can transcribe
+  let videoPath = null;
+  if (msg.message?.videoMessage) {
+    try {
+      const vidBuf = await downloadMediaMessage(msg, 'buffer', {}, { logger: pino({ level: 'silent' }), reuploadRequest: sock.updateMediaMessage });
+      videoPath = '/tmp/blai_vid_' + Date.now() + '.mp4';
+      fs.writeFileSync(videoPath, vidBuf);
+      console.log('[BLAI] Video downloaded:', videoPath, '(' + vidBuf.length + ' bytes)');
+    } catch(e) { console.error('[BLAI] Video error:', e.message); }
+  }
+
+  let reply = await callBrain(phone, text, imagePath, videoPath);
   if (imagePath && fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+  if (videoPath && fs.existsSync(videoPath)) fs.unlinkSync(videoPath);
   try { await sock.sendPresenceUpdate('paused', msg.key.remoteJid); } catch(e) {}
 
   // If brain returned empty (both Gemini & Groq failed), send multilingual fallback
@@ -235,7 +252,15 @@ async function main() {
     markOnlineOnConnect: false,
     syncFullHistory: false,
     fireInitQueries: false,
-    getMessage: async function() { return undefined; },
+    // Auto-retry failed decrypts (fixes "Waiting for this message" Bad MAC issue)
+    maxMsgRetryCount: 5,
+    retryRequestDelayMs: 2000,
+    // Return undefined so Baileys asks the sender to re-send the original cleartext.
+    // This silently heals sessions without the user having to delete/resend.
+    getMessage: async function(key) {
+      console.log('[BLAI] Decrypt retry requested for', key && key.id);
+      return undefined;
+    },
   });
 
   sock.ev.on('creds.update', authState.saveCreds);

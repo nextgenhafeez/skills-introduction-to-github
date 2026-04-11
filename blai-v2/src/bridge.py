@@ -19,6 +19,7 @@ def main():
     parser.add_argument('--phone', required=True)
     parser.add_argument('--message', required=True, help='Base64 encoded message')
     parser.add_argument('--image', default=None, help='Path to image file')
+    parser.add_argument('--video', default=None, help='Path to video file')
     args = parser.parse_args()
 
     message = base64.b64decode(args.message).decode('utf-8')
@@ -28,7 +29,7 @@ def main():
         with open(args.image, 'rb') as f:
             image_data = f.read()
 
-    reply = think(args.phone, message, image_data)
+    reply = think(args.phone, message, image_data, video_path=args.video)
     print(reply)
 
 

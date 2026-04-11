@@ -135,11 +135,23 @@ SKILL_MAP = {
 # Keyword → real executable skill (Python module.function)
 # These actually DO things — call APIs, send emails, post content
 REAL_SKILL_MAP = {
-    # Make.com management
-    "list scenarios": ("make_com", "list_scenarios"),
+    # Make.com management + monitoring
+    "list scenarios": ("make_com", "monitor"),
+    "list make scenarios": ("make_com", "monitor"),
+    "show scenarios": ("make_com", "monitor"),
+    "scenarios status": ("make_com", "monitor"),
     "run scenario": ("make_com", "run_scenario"),
-    "make.com status": ("make_com", "status"),
-    "make com status": ("make_com", "status"),
+    "make.com status": ("make_com", "monitor"),
+    "make com status": ("make_com", "monitor"),
+    "make status": ("make_com", "monitor"),
+    "make.com health": ("make_com", "monitor"),
+    "make health": ("make_com", "monitor"),
+    "monitor make.com": ("make_com", "monitor"),
+    "check make.com": ("make_com", "monitor"),
+    "make.com errors": ("make_com", "monitor"),
+    "any errors on make": ("make_com", "monitor"),
+    "is make working": ("make_com", "monitor"),
+    "what is broken on make": ("make_com", "monitor"),
     "list webhooks": ("make_com", "list_webhooks"),
     "create webhook": ("make_com", "create_webhook"),
 
