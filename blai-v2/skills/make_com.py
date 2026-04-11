@@ -73,15 +73,138 @@ def _load_webhooks() -> dict:
 # --- Public API functions (return WhatsApp-friendly strings) ---
 
 
+def _org_id():
+    return _load_make_config().get("organization_id")
+
+def _team_id():
+    return _load_make_config().get("team_id")
+
+def _make_get(path, params=None):
+    """GET helper that auto-injects organizationId."""
+    p = dict(params or {})
+    if "organizationId" not in p and _org_id():
+        p["organizationId"] = _org_id()
+    return requests.get(_base_url() + path, headers=_headers(), params=p, timeout=20)
+
+def _make_post(path, payload=None, params=None):
+    p = dict(params or {})
+    if "organizationId" not in p and _org_id():
+        p["organizationId"] = _org_id()
+    return requests.post(_base_url() + path, headers=_headers(), params=p, json=payload or {}, timeout=30)
+
+def _fetch_scenarios_raw():
+    """Returns list of scenario dicts or empty list on failure."""
+    try:
+        r = _make_get("/scenarios")
+        if r.status_code == 200:
+            return r.json().get("scenarios", [])
+    except Exception:
+        pass
+    return []
+
+
+def health_snapshot() -> dict:
+    """Structured snapshot for monitoring + alerting. Used by brain.py."""
+    scenarios = _fetch_scenarios_raw()
+    snap = {
+        "ok": True,
+        "total": len(scenarios),
+        "active": 0,
+        "inactive": 0,
+        "invalid": 0,
+        "scenarios": [],
+        "errors": [],
+    }
+    if not scenarios:
+        snap["ok"] = False
+        snap["errors"].append("Cannot reach Make.com API or no scenarios returned")
+        return snap
+    for s in scenarios:
+        is_active = bool(s.get("isActive"))
+        is_invalid = bool(s.get("isinvalid"))
+        if is_active:
+            snap["active"] += 1
+        else:
+            snap["inactive"] += 1
+        if is_invalid:
+            snap["invalid"] += 1
+        snap["scenarios"].append({
+            "id": s.get("id"),
+            "name": s.get("name"),
+            "active": is_active,
+            "invalid": is_invalid,
+            "modules": [m.get("moduleName") for m in s.get("usedModules", [])],
+            "packages": s.get("usedPackages", []),
+            "ops": s.get("operations"),
+            "last_edit": s.get("lastEdit"),
+        })
+    return snap
+
+
+def monitor() -> str:
+    """Human-readable health report for WhatsApp."""
+    snap = health_snapshot()
+    if not snap["ok"]:
+        return "Make.com: API unreachable. " + ("; ".join(snap["errors"]) if snap["errors"] else "")
+    lines = []
+    lines.append("MAKE.COM HEALTH (" + str(snap["total"]) + " scenarios):")
+    lines.append("  Active: " + str(snap["active"]) + "  |  Inactive: " + str(snap["inactive"]) + "  |  Invalid: " + str(snap["invalid"]))
+    lines.append("")
+    for s in snap["scenarios"]:
+        flags = []
+        flags.append("ON" if s["active"] else "OFF")
+        if s["invalid"]:
+            flags.append("INVALID")
+        lines.append("  [" + "/".join(flags) + "] " + (s["name"] or "?") + " (id " + str(s["id"]) + ")")
+        if s["packages"]:
+            lines.append("       packages: " + ", ".join(s["packages"]))
+    if snap["invalid"] > 0 or snap["inactive"] == snap["total"]:
+        lines.append("")
+        lines.append("ALERT: " + str(snap["invalid"]) + " invalid, " + str(snap["inactive"]) + " inactive. Open https://eu1.make.com/scenarios to fix.")
+    return "\n".join(lines)
+
+
+def find_scenario(query: str) -> dict:
+    """Fuzzy find a scenario by partial name match."""
+    q = (query or "").lower().strip()
+    if not q:
+        return {}
+    for s in _fetch_scenarios_raw():
+        name = (s.get("name") or "").lower()
+        if q in name or any(q in (m.get("moduleName") or "").lower() for m in s.get("usedModules", [])):
+            return s
+    return {}
+
+
+def status_of(query: str) -> str:
+    """Get human-readable status of a scenario by name fragment."""
+    s = find_scenario(query)
+    if not s:
+        return "No scenario matches '" + query + "'."
+    parts = []
+    parts.append("Scenario: " + (s.get("name") or "?"))
+    parts.append("  ID: " + str(s.get("id")))
+    parts.append("  Active: " + str(s.get("isActive")))
+    parts.append("  Invalid: " + str(s.get("isinvalid")))
+    parts.append("  Packages: " + ", ".join(s.get("usedPackages", [])))
+    parts.append("  Modules: " + ", ".join(m.get("moduleName") for m in s.get("usedModules", [])))
+    parts.append("  Operations used: " + str(s.get("operations")))
+    parts.append("  Last edit: " + str(s.get("lastEdit")))
+    if s.get("isinvalid"):
+        parts.append("")
+        parts.append("This scenario is INVALID. Open https://eu1.make.com/scenario/" + str(s.get("id")) + " to fix it.")
+    elif not s.get("isActive"):
+        parts.append("")
+        parts.append("This scenario is OFF. Toggle it on at https://eu1.make.com/scenario/" + str(s.get("id")))
+    return "\n".join(parts)
+
+# ---------- /new helpers ----------
+
+
 def list_scenarios() -> str:
     """List all Make.com scenarios in the account."""
     try:
-        resp = requests.get(
-            f"{_base_url()}/scenarios",
-            headers=_headers(),
-            params={"pg[limit]": 20},
-            timeout=15
-        )
+        resp = _make_get("/scenarios", {"pg[limit]": 20})
         if resp.status_code == 200:
             data = resp.json()
             scenarios = data.get("scenarios", [])
