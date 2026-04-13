@@ -130,6 +130,26 @@ SKILL_MAP = {
     "routine": "SKILL-daily-tasks.md",
     "daily": "SKILL-daily-tasks.md",
     "what did you do": "SKILL-daily-scorecard.md",
+
+    # App Promotion
+    "promote my app": "SKILL-app-promoter.md",
+    "promote all apps": "SKILL-app-promoter.md",
+    "my app links": "SKILL-app-promoter.md",
+    "app links": "SKILL-app-promoter.md",
+    "app promoter": "SKILL-app-promoter.md",
+
+    # GitHub Repository Browser
+    "github": "SKILL-github-browser.md",
+    "repo": "SKILL-github-browser.md",
+    "repository": "SKILL-github-browser.md",
+    "project code": "SKILL-github-browser.md",
+    "client repo": "SKILL-github-browser.md",
+    "check on github": "SKILL-github-browser.md",
+    "show me the code": "SKILL-github-browser.md",
+    "investment platform": "SKILL-github-browser.md",
+    "crm": "SKILL-github-browser.md",
+    "sushi": "SKILL-github-browser.md",
+    "credail": "SKILL-github-browser.md",
 }
 
 # Keyword → real executable skill (Python module.function)
@@ -247,6 +267,31 @@ REAL_SKILL_MAP = {
     "posting stats": ("social_poster_real", "get_posting_stats"),
     "platform status": ("social_poster_real", "list_configured_platforms"),
     "setup social webhook": ("social_poster_real", "setup_platform_webhook"),
+
+    # Real App Promotion
+    "promote my app": ("app_promoter", "promote_my_app"),
+    "promote all apps": ("app_promoter", "promote_my_app"),
+    "my app links": ("app_promoter", "list_apps"),
+    "app promo stats": ("social_poster_real", "get_posting_stats"),
+
+    # GitHub Repository Browser
+    "list my repos": ("github_browser", "list_repos"),
+    "list repos": ("github_browser", "list_repos"),
+    "show my repos": ("github_browser", "list_repos"),
+    "repo info": ("github_browser", "get_repo_info"),
+    "tell me about repo": ("github_browser", "get_repo_info"),
+    "show files": ("github_browser", "list_repo_files"),
+    "repo files": ("github_browser", "list_repo_files"),
+    "read file": ("github_browser", "read_file"),
+    "show file": ("github_browser", "read_file"),
+    "repo readme": ("github_browser", "get_readme"),
+    "search repo": ("github_browser", "search_repo"),
+    "search code": ("github_browser", "search_repo"),
+    "summarise project": ("github_browser", "summarise_project"),
+    "summarize project": ("github_browser", "summarise_project"),
+    "project summary": ("github_browser", "summarise_project"),
+    "client repos": ("github_browser", "get_client_repos"),
+    "check on github": ("github_browser", "summarise_project"),
 }
 
 
