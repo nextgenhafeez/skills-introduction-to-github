@@ -101,7 +101,7 @@ def _call_gemini(system_text: str, contents: list) -> str:
     for key in keys:
         try:
             resp = requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={key}",
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={key}",
                 json={
                     "systemInstruction": {"parts": [{"text": system_text}]},
                     "contents": contents,
@@ -351,7 +351,7 @@ def get_self_status() -> str:
         "",
         "[REAL-TIME SELF STATUS - answer Boss questions about model/keys/state from THIS, not from memory]",
         "- Active provider RIGHT NOW: " + active,
-        "- Gemini: " + str(len(gemini_keys)) + " keys loaded, model gemini-2.5-flash-lite, last exhausted: " + fmt(gem_exh),
+        "- Gemini: " + str(len(gemini_keys)) + " keys loaded, model gemini-2.5-pro (max intelligence), last exhausted: " + fmt(gem_exh),
         "- Groq: " + str(len(groq_keys)) + " keys loaded, cascade llama-3.3-70b-versatile -> llama-3.1-8b-instant, last exhausted: " + fmt(groq_exh),
         "- This very reply you are generating now is being served by: " + active,
         "- State file: memory/brain_state.json",
@@ -379,8 +379,35 @@ def extract_urls(message: str) -> list:
     return URL_REGEX.findall(message)[:3]  # cap at 3 to keep prompt small
 
 
+GITHUB_REPO_RE = re.compile(r"https?://github\.com/([^/\s]+)/([^/\s.]+)")
+
+
+def _is_github_repo_url(url: str) -> tuple:
+    """Check if a URL is a GitHub repo URL. Returns (owner, repo) or None."""
+    m = GITHUB_REPO_RE.match(url.rstrip("/").rstrip(".git"))
+    if m:
+        return (m.group(1), m.group(2))
+    return None
+
+
+def _github_repo_check(owner: str, repo: str) -> str:
+    """Use github_browser skill to get real repo info with auth token."""
+    try:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from skills.github_browser import summarise_project
+        return summarise_project(f"{owner}/{repo}")
+    except Exception as e:
+        return f"GitHub API error: {str(e)[:200]}"
+
+
 def url_check(url: str) -> str:
     """Run a real HTTP HEAD with curl. Returns a status string for context."""
+    # GitHub private repos: use authenticated API, not raw curl
+    gh = _is_github_repo_url(url)
+    if gh:
+        return _github_repo_check(gh[0], gh[1])
+
     try:
         result = _subprocess.run(
             [
@@ -400,11 +427,20 @@ def get_url_check_context(message: str) -> str:
     urls = extract_urls(message)
     if not urls:
         return ""
-    lines = ["", "[REAL URL CHECK RESULTS - cite these as ground truth, do not invent anything else]"]
+
+    # Check if any URL is a GitHub repo — use richer context header
+    has_github = any(_is_github_repo_url(u) for u in urls)
+    if has_github:
+        header = "[GITHUB REPOSITORY DATA - fetched via authenticated API with your token. This is REAL data, use it to answer the user's question]"
+    else:
+        header = "[REAL URL CHECK RESULTS - cite these as ground truth, do not invent anything else]"
+
+    lines = ["", header]
     for u in urls:
         lines.append("- " + u)
         lines.append("  " + url_check(u))
     return "\n".join(lines)
+
 
 
 

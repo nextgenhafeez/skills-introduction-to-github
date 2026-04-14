@@ -51,11 +51,30 @@ def _check_make_scenario_status(scenario_id: str) -> dict:
             data = resp.json().get("scenario", {})
             return {
                 "ok": True,
-                "active": data.get("active", False),
+                "active": data.get("isActive", False),
                 "name": data.get("name", "Unknown"),
-                "invalid": data.get("is_invalid", False),
+                "invalid": data.get("isinvalid", False),
                 "last_run": data.get("last_run_at")
             }
+        
+        # Fallback: if single fetch is forbidden, try listing scenarios
+        if resp.status_code == 403:
+            list_url = f"{base_url}/scenarios"
+            org_id = make_config.get("organization_id")
+            params = {"organizationId": org_id} if org_id else {}
+            list_resp = requests.get(list_url, headers=headers, params=params, timeout=15)
+            if list_resp.status_code == 200:
+                scenarios = list_resp.json().get("scenarios", [])
+                for s in scenarios:
+                    if str(s.get("id")) == str(scenario_id):
+                        return {
+                            "ok": True, 
+                            "active": s.get("isActive", False),
+                            "name": s.get("name", "Unknown"),
+                            "invalid": s.get("isinvalid", False),
+                            "last_run": s.get("lastEdit")
+                        }
+        
         return {"ok": False, "error": f"Make API status {resp.status_code}"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
@@ -71,7 +90,7 @@ def _save_post_log(entry: dict):
     log.append({**entry, "ts": int(time.time())})
     POSTS_LOG.write_text(json.dumps(log[-100:], indent=2))
 
-def post_to_social(platform: str, content: str, image_url: str = None) -> str:
+def post_to_social(platform: str, content: str, image_url: str = None, title: str = None) -> str:
     """Post with scenario health check."""
     config = _load_config()
     make_config = config.get("make_com", {})
@@ -116,7 +135,10 @@ def post_to_social(platform: str, content: str, image_url: str = None) -> str:
     payload = {
         "platform": platform,
         "content": content,
+        "text": content,  # Alias for Buffer/LinkedIn/FB expectation
+        "title": title or (content[:50] + "..." if len(content) > 50 else content),
         "image_url": image_url,
+        "media_url": image_url, # Alias for different media expectations
         "source": "BLAI-v2"
     }
     

@@ -140,7 +140,6 @@ def get_repo_info(repo_full_name: str) -> str:
         f"Default Branch: {data.get('default_branch', 'main')}",
         f"Created: {(data.get('created_at') or '')[:10]}",
         f"Last Push: {(data.get('pushed_at') or '')[:10]}",
-        f"URL: {data.get('html_url', '')}",
     ]
 
     topics = data.get("topics", [])

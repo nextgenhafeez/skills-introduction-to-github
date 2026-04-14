@@ -213,7 +213,7 @@ def list_scenarios() -> str:
 
             lines = [f"MAKE.COM SCENARIOS ({len(scenarios)}):\n"]
             for s in scenarios:
-                status = "ON" if s.get("isEnabled") else "OFF"
+                status = "ON" if s.get("isActive") else "OFF"
                 name = s.get("name", "Unnamed")
                 sid = s.get("id", "?")
                 lines.append(f"  [{status}] {name} (ID: {sid})")
