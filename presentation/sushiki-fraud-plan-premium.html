@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SushiKi Fraud Prevention Plan</title>
+    <style>
+      :root {
+        --bg-0: #050505;
+        --bg-1: #0a0d08;
+        --bg-2: #11160c;
+        --panel: rgba(18, 22, 16, 0.88);
+        --panel-2: rgba(28, 35, 20, 0.86);
+        --panel-3: rgba(11, 13, 10, 0.9);
+        --line: rgba(255, 255, 255, 0.08);
+        --text: #f8faf6;
+        --muted: #abb4a3;
+        --white-soft: #e8eee4;
+        --green: #95c93d;
+        --green-2: #7aac2d;
+        --green-glow: rgba(149, 201, 61, 0.26);
+        --red: #ff6c5f;
+        --amber: #ffb347;
+        --blue: #5db8ff;
+        --shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+        color: var(--text);
+        font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+      }
+
+      body {
+        counter-reset: slide;
+      }
+
+      @page {
+        size: 1280px 720px;
+        margin: 0;
+      }
+
+      .deck {
+        width: 1280px;
+        margin: 0 auto;
+      }
+
+      .slide {
+        position: relative;
+        width: 1280px;
+        height: 720px;
+        overflow: hidden;
+        page-break-after: always;
+        background:
+          radial-gradient(circle at 15% 0%, rgba(149, 201, 61, 0.16), transparent 26%),
+          radial-gradient(circle at 100% 10%, rgba(255, 255, 255, 0.08), transparent 18%),
+          radial-gradient(circle at 85% 90%, rgba(149, 201, 61, 0.12), transparent 24%),
+          linear-gradient(145deg, var(--bg-1) 0%, var(--bg-0) 48%, var(--bg-2) 100%);
+      }
+
+      .slide::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        background-size: 48px 48px;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 90%);
+        pointer-events: none;
+      }
+
+      .slide::after {
+        counter-increment: slide;
+        content: counter(slide, decimal-leading-zero);
+        position: absolute;
+        right: 48px;
+        bottom: 26px;
+        color: rgba(255, 255, 255, 0.28);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.35em;
+      }
+
+      .wrap {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        padding: 46px 52px 44px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .eyebrow {
+        margin: 0 0 14px;
+        color: var(--green);
+        font-size: 13px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        font-size: 66px;
+        line-height: 0.94;
+        letter-spacing: -0.05em;
+        margin-bottom: 16px;
+      }
+
+      h2 {
+        font-size: 38px;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        margin-bottom: 12px;
+      }
+
+      .subtitle {
+        color: var(--white-soft);
+        font-size: 22px;
+        line-height: 1.42;
+        max-width: 760px;
+      }
+
+      .content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .grid-2,
+      .grid-3,
+      .grid-4 {
+        display: grid;
+        gap: 18px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .grid-4 {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .panel {
+        position: relative;
+        background: linear-gradient(180deg, rgba(29, 37, 24, 0.78), rgba(11, 13, 10, 0.92));
+        border: 1px solid var(--line);
+        border-radius: 26px;
+        box-shadow: var(--shadow);
+      }
+
+      .panel::before {
+        content: "";
+        position: absolute;
+        inset: auto 18px -16px 18px;
+        height: 26px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(149, 201, 61, 0.18), rgba(149, 201, 61, 0));
+        filter: blur(12px);
+        z-index: -1;
+      }
+
+      .card {
+        padding: 22px 24px;
+      }
+
+      .small {
+        font-size: 15px;
+        color: var(--muted);
+      }
+
+      .metric {
+        min-height: 150px;
+      }
+
+      .metric .value {
+        display: block;
+        font-size: 56px;
+        line-height: 0.9;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        margin-bottom: 10px;
+      }
+
+      .metric .label {
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 800;
+      }
+
+      .title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+      }
+
+      .logo-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 16px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+      }
+
+      .logo-chip img {
+        width: 150px;
+        height: auto;
+        display: block;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 20px;
+        align-items: stretch;
+      }
+
+      .hero-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .tag {
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(149, 201, 61, 0.28);
+        color: var(--white-soft);
+        background: rgba(149, 201, 61, 0.08);
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      .orbital {
+        position: relative;
+        min-height: 530px;
+        border-radius: 30px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 50% 50%, rgba(149, 201, 61, 0.22), transparent 18%),
+          radial-gradient(circle at 50% 50%, rgba(149, 201, 61, 0.08), transparent 34%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+      }
+
+      .orbital::before,
+      .orbital::after {
+        content: "";
+        position: absolute;
+        inset: 80px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+      }
+
+      .orbital::after {
+        inset: 130px;
+        border-color: rgba(149, 201, 61, 0.18);
+      }
+
+      .core {
+        position: absolute;
+        inset: 50%;
+        transform: translate(-50%, -50%);
+        width: 210px;
+        height: 210px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #c8f06a 0%, #95c93d 45%, #56751e 100%);
+        box-shadow:
+          0 0 0 18px rgba(149, 201, 61, 0.08),
+          0 25px 70px rgba(149, 201, 61, 0.28);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0e1407;
+      }
+
+      .orbit-node {
+        position: absolute;
+        width: 170px;
+        padding: 16px 18px;
+        border-radius: 20px;
+        background: linear-gradient(180deg, rgba(30, 37, 26, 0.94), rgba(14, 18, 12, 0.94));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: var(--shadow);
+      }
+
+      .orbit-node .kicker {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: var(--green);
+        font-weight: 800;
+        margin-bottom: 8px;
+      }
+
+      .orbit-node .headline {
+        font-size: 22px;
+        line-height: 1;
+        margin-bottom: 8px;
+        font-weight: 800;
+      }
+
+      .orbit-node p {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.4;
+        margin-bottom: 0;
+      }
+
+      .top {
+        top: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .right {
+        right: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .bottom {
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .left {
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .summary-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .summary-item {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .summary-item .num {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        background: rgba(149, 201, 61, 0.14);
+        color: var(--green);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 800;
+        flex: 0 0 auto;
+      }
+
+      .summary-item strong {
+        display: block;
+        font-size: 17px;
+        margin-bottom: 4px;
+      }
+
+      .summary-item span {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .risk-card {
+        min-height: 390px;
+        display: flex;
+        flex-direction: column;
+        transform: perspective(1200px) rotateX(4deg);
+      }
+
+      .risk-card.red {
+        background: linear-gradient(180deg, rgba(69, 17, 15, 0.92), rgba(23, 10, 10, 0.96));
+      }
+
+      .risk-card.orange {
+        background: linear-gradient(180deg, rgba(66, 39, 11, 0.92), rgba(24, 16, 9, 0.96));
+      }
+
+      .risk-card.blue {
+        background: linear-gradient(180deg, rgba(17, 39, 63, 0.9), rgba(9, 16, 24, 0.96));
+      }
+
+      .risk-score {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-weight: 800;
+        margin-bottom: 20px;
+      }
+
+      .blue .risk-score {
+        background: rgba(93, 184, 255, 0.14);
+        color: var(--blue);
+      }
+
+      .red .risk-score {
+        background: rgba(255, 108, 95, 0.16);
+        color: var(--red);
+      }
+
+      .orange .risk-score {
+        background: rgba(255, 179, 71, 0.16);
+        color: var(--amber);
+      }
+
+      .risk-card h3 {
+        font-size: 28px;
+        margin-bottom: 14px;
+      }
+
+      .risk-card ul {
+        margin: 0 0 18px;
+        padding-left: 18px;
+        color: var(--white-soft);
+        font-size: 16px;
+        line-height: 1.52;
+      }
+
+      .risk-card p {
+        margin-top: auto;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .flow-line {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 14px;
+        margin-top: 20px;
+      }
+
+      .flow-line::before {
+        content: "";
+        position: absolute;
+        top: 68px;
+        left: 6%;
+        right: 6%;
+        height: 4px;
+        background: linear-gradient(90deg, rgba(149, 201, 61, 0.1), rgba(149, 201, 61, 0.6), rgba(149, 201, 61, 0.1));
+        z-index: 0;
+      }
+
+      .node {
+        position: relative;
+        z-index: 1;
+        min-height: 160px;
+        padding: 18px 16px;
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(25, 31, 21, 0.94), rgba(12, 16, 11, 0.96));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: var(--shadow);
+        text-align: center;
+      }
+
+      .node .icon {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 16px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, rgba(149, 201, 61, 0.26), rgba(149, 201, 61, 0.08));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--green);
+        font-size: 26px;
+        font-weight: 800;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+
+      .node strong {
+        display: block;
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+
+      .node span {
+        display: block;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .security-ribbon {
+        margin-top: 28px;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+      }
+
+      .security-ribbon .step {
+        padding: 14px 14px;
+        border-radius: 18px;
+        text-align: center;
+        border: 1px solid rgba(149, 201, 61, 0.18);
+        background: rgba(149, 201, 61, 0.08);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+
+      .security-ribbon .step strong {
+        display: block;
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+
+      .security-ribbon .step span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      .stack-zone {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 26px;
+        align-items: center;
+      }
+
+      .stack-wrap {
+        position: relative;
+        min-height: 460px;
+      }
+
+      .stack-card {
+        position: absolute;
+        left: 42px;
+        right: 42px;
+        height: 86px;
+        border-radius: 24px;
+        padding: 18px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        box-shadow: var(--shadow);
+        transform: perspective(900px) rotateX(58deg);
+        transform-origin: center center;
+      }
+
+      .stack-card strong {
+        font-size: 24px;
+      }
+
+      .stack-card span {
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 14px;
+        max-width: 280px;
+        text-align: right;
+      }
+
+      .layer-1 { top: 310px; background: linear-gradient(180deg, #4b6317, #34470d); }
+      .layer-2 { top: 238px; background: linear-gradient(180deg, #607f1b, #415512); }
+      .layer-3 { top: 166px; background: linear-gradient(180deg, #779d23, #56741b); }
+      .layer-4 { top: 94px; background: linear-gradient(180deg, #8ab52e, #688a23); }
+      .layer-5 { top: 22px; background: linear-gradient(180deg, #a4d54d, #86b731); color: #132007; }
+
+      .layer-5 span {
+        color: rgba(19, 32, 7, 0.8);
+      }
+
+      .side-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .side-item {
+        padding: 16px 18px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+      }
+
+      .side-item strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 17px;
+      }
+
+      .side-item span {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.42;
+      }
+
+      .timeline {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .timeline::before {
+        content: "";
+        position: absolute;
+        top: 28px;
+        left: 12%;
+        right: 12%;
+        height: 3px;
+        background: linear-gradient(90deg, rgba(149, 201, 61, 0.2), rgba(149, 201, 61, 0.65), rgba(149, 201, 61, 0.2));
+      }
+
+      .phase {
+        position: relative;
+        padding-top: 48px;
+      }
+
+      .phase::before {
+        content: "";
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #d7ff7a 0%, #95c93d 56%, #5b7a1c 100%);
+        box-shadow: 0 0 0 10px rgba(149, 201, 61, 0.1);
+      }
+
+      .phase-card {
+        min-height: 360px;
+      }
+
+      .phase-card h3 {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+
+      .phase-card .period {
+        color: var(--green);
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 12px;
+        font-weight: 800;
+        margin-bottom: 16px;
+      }
+
+      .phase-card ul {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 16px;
+        line-height: 1.52;
+      }
+
+      .phase-card li + li {
+        margin-top: 8px;
+      }
+
+      .phase-card .impact {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        flex: 1;
+      }
+
+      .compare-card {
+        min-height: 470px;
+      }
+
+      .compare-card.bad {
+        background: linear-gradient(180deg, rgba(54, 18, 18, 0.9), rgba(18, 10, 10, 0.95));
+      }
+
+      .compare-card.good {
+        background: linear-gradient(180deg, rgba(27, 49, 13, 0.9), rgba(10, 18, 10, 0.95));
+      }
+
+      .compare-card .stamp {
+        display: inline-flex;
+        padding: 8px 12px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        font-size: 12px;
+        font-weight: 800;
+        margin-bottom: 18px;
+      }
+
+      .bad .stamp {
+        color: var(--red);
+        background: rgba(255, 108, 95, 0.14);
+      }
+
+      .good .stamp {
+        color: var(--green);
+        background: rgba(149, 201, 61, 0.14);
+      }
+
+      .compare-card ul {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 18px;
+        line-height: 1.65;
+      }
+
+      .compare-card .big {
+        font-size: 34px;
+        line-height: 1.05;
+        margin-top: 0;
+        margin-bottom: 16px;
+      }
+
+      .impact-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 20px;
+        align-items: stretch;
+        flex: 1;
+      }
+
+      .impact-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .impact-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px 20px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+      }
+
+      .impact-item strong {
+        font-size: 20px;
+      }
+
+      .impact-item span {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .impact-item .badge {
+        flex: 0 0 auto;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(149, 201, 61, 0.12);
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .final-quote {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 100%;
+        padding: 26px 28px;
+      }
+
+      .final-quote .quote {
+        font-size: 34px;
+        line-height: 1.14;
+        letter-spacing: -0.03em;
+        margin-bottom: 24px;
+      }
+
+      .final-quote .foot {
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .hero-slide h1 {
+        font-size: 52px;
+        margin-bottom: 10px;
+      }
+
+      .hero-slide .subtitle {
+        font-size: 16px;
+        line-height: 1.32;
+        max-width: 660px;
+        margin-bottom: 0;
+      }
+
+      .hero-slide .wrap {
+        padding: 38px 46px 34px;
+      }
+
+      .hero-slide .title-row {
+        margin-bottom: 10px;
+      }
+
+      .hero-slide .tag-row {
+        margin-top: 12px;
+        gap: 7px;
+      }
+
+      .hero-slide .tag {
+        padding: 7px 11px;
+        font-size: 10px;
+      }
+
+      .hero-slide .logo-chip {
+        padding: 10px 14px;
+      }
+
+      .hero-slide .logo-chip img {
+        width: 120px;
+      }
+
+      .hero-slide .hero {
+        gap: 12px;
+      }
+
+      .hero-slide .card {
+        padding: 16px 18px;
+      }
+
+      .hero-slide .metric {
+        min-height: 98px;
+      }
+
+      .hero-slide .metric .value {
+        font-size: 40px;
+        margin-bottom: 6px;
+      }
+
+      .hero-slide .small {
+        font-size: 12px;
+        line-height: 1.28;
+      }
+
+      .hero-slide h2 {
+        font-size: 24px;
+        margin-bottom: 8px;
+      }
+
+      .hero-slide .summary-list {
+        margin-top: 8px;
+        gap: 8px;
+      }
+
+      .hero-slide .summary-item {
+        padding: 10px 12px;
+        gap: 10px;
+      }
+
+      .hero-slide .summary-item strong {
+        font-size: 14px;
+      }
+
+      .hero-slide .summary-item span {
+        font-size: 12px;
+        line-height: 1.3;
+      }
+
+      .hero-slide .orbital {
+        min-height: 420px;
+      }
+
+      .hero-slide .orbital::before {
+        inset: 66px;
+      }
+
+      .hero-slide .orbital::after {
+        inset: 108px;
+      }
+
+      .hero-slide .core {
+        width: 164px;
+        height: 164px;
+        font-size: 22px;
+      }
+
+      .hero-slide .orbit-node {
+        width: 144px;
+        padding: 12px 14px;
+      }
+
+      .hero-slide .orbit-node .headline {
+        font-size: 16px;
+      }
+
+      .hero-slide .orbit-node p {
+        font-size: 12px;
+        line-height: 1.32;
+      }
+
+      @media screen {
+        body {
+          padding: 20px 0 40px;
+          overflow-y: auto;
+        }
+
+        .slide {
+          margin: 0 auto 28px;
+          border-radius: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="deck">
+      <section class="slide hero-slide">
+        <div class="wrap">
+          <div class="title-row">
+            <div>
+              <p class="eyebrow">SushiKi | Executive Security Plan</p>
+              <h1>Fraud Prevention System for a safer, stronger SushiKi.</h1>
+              <p class="subtitle">
+                A premium, client-ready roadmap that turns fraud control into a
+                clear business advantage for Mr. Sadik and the SushiKi team.
+              </p>
+              <div class="tag-row">
+                <div class="tag">Protect Revenue</div>
+                <div class="tag">Control Staff Risk</div>
+                <div class="tag">Verify Deliveries</div>
+                <div class="tag">Track Every Action</div>
+              </div>
+            </div>
+            <div class="logo-chip">
+              <img
+                src="file:///Users/tonny/Downloads/SushiKi/Sushi App and POS/sushiki logo/logo/Rider_App_Logo.png"
+                alt="SushiKi logo"
+              />
+            </div>
+          </div>
+          <div class="content hero">
+            <div class="hero-stack">
+              <div class="panel card">
+                <div class="grid-3">
+                  <div class="metric">
+                    <span class="value">3</span>
+                    <span class="label">Fraud Risk Zones</span>
+                    <p class="small">Customer, staff, and rider controls must work together.</p>
+                  </div>
+                  <div class="metric">
+                    <span class="value">1</span>
+                    <span class="label">Week to Start</span>
+                    <p class="small">Phase 1 brings the fastest protection and clearest ROI.</p>
+                  </div>
+                  <div class="metric">
+                    <span class="value">70%</span>
+                    <span class="label">Loss Reduction Goal</span>
+                    <p class="small">Expected reduction once core verification and audit controls are live.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="panel card">
+                <h2>Top-level message</h2>
+                <div class="summary-list">
+                  <div class="summary-item">
+                    <div class="num">1</div>
+                    <div>
+                      <strong>Stop fraud before it happens</strong>
+                      <span>Use OTP, delivery PIN, GPS checks, and order rate limits.</span>
+                    </div>
+                  </div>
+                  <div class="summary-item">
+                    <div class="num">2</div>
+                    <div>
+                      <strong>Limit risky actions inside operations</strong>
+                      <span>Require manager PIN and role-based permissions for sensitive actions.</span>
+                    </div>
+                  </div>
+                  <div class="summary-item">
+                    <div class="num">3</div>
+                    <div>
+                      <strong>Create full visibility and proof</strong>
+                      <span>Audit logs, shift tracking, and proof of delivery make disputes easier to resolve.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="panel orbital">
+              <div class="core">SushiKi<br />Shield</div>
+              <div class="orbit-node top">
+                <div class="kicker">Layer 01</div>
+                <div class="headline">Verify</div>
+                <p>OTP, PIN, GPS, and rate limiting stop fake actions early.</p>
+              </div>
+              <div class="orbit-node right">
+                <div class="kicker">Layer 02</div>
+                <div class="headline">Control</div>
+                <p>Manager approval and role restrictions block internal abuse.</p>
+              </div>
+              <div class="orbit-node bottom">
+                <div class="kicker">Layer 03</div>
+                <div class="headline">Track</div>
+                <p>Audit logs and cash reconciliation create accountability.</p>
+              </div>
+              <div class="orbit-node left">
+                <div class="kicker">Outcome</div>
+                <div class="headline">Grow Safely</div>
+                <p>Lower losses, fewer disputes, and stronger client confidence.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <p class="eyebrow">Risk Map</p>
+          <h2>Where SushiKi loses money today</h2>
+          <p class="subtitle">
+            The biggest vulnerability is not customers. It is internal staff abuse,
+            followed by rider-side delivery manipulation.
+          </p>
+          <div class="content grid-3" style="margin-top: 22px;">
+            <div class="panel card risk-card blue">
+              <div class="risk-score">Medium Risk</div>
+              <h3>Customer fraud</h3>
+              <ul>
+                <li>Fake orders and bot activity</li>
+                <li>Cash refusal at delivery</li>
+                <li>Chargebacks and disputes</li>
+                <li>Repeat scammer behavior</li>
+              </ul>
+              <p>
+                Current OTP helps, but the business still needs rate limits, fraud flags,
+                and first-order address validation.
+              </p>
+            </div>
+            <div class="panel card risk-card red">
+              <div class="risk-score">Highest Risk</div>
+              <h3>POS staff abuse</h3>
+              <ul>
+                <li>Deleting items after kitchen print</li>
+                <li>Unauthorized discounts and voids</li>
+                <li>Cash drawer theft and ghost orders</li>
+                <li>No clear shift accountability</li>
+              </ul>
+              <p>
+                This is the main revenue leak. Staff actions need manager approval,
+                immutable logs, and shift-by-shift cash control.
+              </p>
+            </div>
+            <div class="panel card risk-card orange">
+              <div class="risk-score">High Risk</div>
+              <h3>Rider manipulation</h3>
+              <ul>
+                <li>Fake delivered status</li>
+                <li>GPS spoofing or non-arrival</li>
+                <li>Cash handling problems</li>
+                <li>False customer-not-home claims</li>
+              </ul>
+              <p>
+                Delivery needs proof. PIN, GPS range checks, and optional photo proof
+                remove ambiguity at the doorstep.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <p class="eyebrow">Operating Flow</p>
+          <h2>The protected SushiKi journey</h2>
+          <p class="subtitle">
+            The simplest client view: every order moves through one clean flow, with
+            security checks added at the exact points where fraud usually happens.
+          </p>
+          <div class="content">
+            <div class="flow-line">
+              <div class="node">
+                <div class="icon">01</div>
+                <strong>Customer</strong>
+                <span>OTP verification, order rate limit, fraud flags.</span>
+              </div>
+              <div class="node">
+                <div class="icon">02</div>
+                <strong>Order</strong>
+                <span>State control, address checks, permanent audit trail.</span>
+              </div>
+              <div class="node">
+                <div class="icon">03</div>
+                <strong>Kitchen</strong>
+                <span>Items lock after print. No silent deletion allowed.</span>
+              </div>
+              <div class="node">
+                <div class="icon">04</div>
+                <strong>Rider</strong>
+                <span>Assigned by admin, GPS checked, delivery proof captured.</span>
+              </div>
+              <div class="node">
+                <div class="icon">05</div>
+                <strong>Delivery</strong>
+                <span>Customer PIN confirms handoff and closes disputes.</span>
+              </div>
+            </div>
+            <div class="security-ribbon">
+              <div class="step">
+                <strong>OTP</strong>
+                <span>Real customer validation</span>
+              </div>
+              <div class="step">
+                <strong>PIN</strong>
+                <span>Proof of receipt</span>
+              </div>
+              <div class="step">
+                <strong>Manager PIN</strong>
+                <span>High-risk action control</span>
+              </div>
+              <div class="step">
+                <strong>GPS</strong>
+                <span>Real location verification</span>
+              </div>
+              <div class="step">
+                <strong>Audit Log</strong>
+                <span>Permanent accountability</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <p class="eyebrow">3D Security Model</p>
+          <h2>Five stacked layers of protection</h2>
+          <p class="subtitle">
+            Instead of one big feature, SushiKi needs a security system where each layer
+            supports the one above it.
+          </p>
+          <div class="content stack-zone">
+            <div class="stack-wrap">
+              <div class="stack-card layer-5">
+                <strong>Audit Log</strong>
+                <span>Every important action is traceable and reviewable.</span>
+              </div>
+              <div class="stack-card layer-4">
+                <strong>Manager Control</strong>
+                <span>Discounts, voids, refunds, and item removal need approval.</span>
+              </div>
+              <div class="stack-card layer-3">
+                <strong>Delivery PIN</strong>
+                <span>Customer confirms successful delivery.</span>
+              </div>
+              <div class="stack-card layer-2">
+                <strong>GPS Verification</strong>
+                <span>Rider must be near the address before status changes.</span>
+              </div>
+              <div class="stack-card layer-1">
+                <strong>OTP + Limits</strong>
+                <span>Only trusted order activity enters the system.</span>
+              </div>
+            </div>
+            <div class="side-list">
+              <div class="panel side-item">
+                <strong>Why this works</strong>
+                <span>
+                  Fraud succeeds when there is no proof, no control, and no visibility.
+                  This model fixes all three at once.
+                </span>
+              </div>
+              <div class="panel side-item">
+                <strong>Best first move</strong>
+                <span>
+                  Delivery PIN is the fastest win because it blocks fake delivery claims
+                  and gives immediate evidence in disputes.
+                </span>
+              </div>
+              <div class="panel side-item">
+                <strong>Operational gain</strong>
+                <span>
+                  Staff can still work quickly, but the most sensitive actions become
+                  deliberate, approved, and fully traceable.
+                </span>
+              </div>
+              <div class="panel side-item">
+                <strong>Client message</strong>
+                <span>
+                  SushiKi moves from a basic ordering setup to a controlled,
+                  audit-friendly operating platform.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <p class="eyebrow">Roadmap</p>
+          <h2>Three-phase rollout with strongest ROI first</h2>
+          <p class="subtitle">
+            The plan is intentionally phased so SushiKi gets visible protection quickly,
+            then grows into deeper operational control.
+          </p>
+          <div class="content timeline">
+            <div class="phase">
+              <div class="panel card phase-card">
+                <div class="period">Phase 1 | Week 1</div>
+                <h3>Immediate protection</h3>
+                <ul>
+                  <li>Delivery PIN on all delivery orders</li>
+                  <li>Manager PIN for refunds, voids, discounts, item removal</li>
+                  <li>Immutable audit log collection</li>
+                </ul>
+                <div class="impact">
+                  Biggest fraud blocker, fastest visible business result, and strongest
+                  proof for client confidence.
+                </div>
+              </div>
+            </div>
+            <div class="phase">
+              <div class="panel card phase-card">
+                <div class="period">Phase 2 | 1 to 2 weeks</div>
+                <h3>Operational control</h3>
+                <ul>
+                  <li>Shift tracking and cash reconciliation</li>
+                  <li>Photo proof of delivery</li>
+                  <li>Order state machine and customer rate limiting</li>
+                </ul>
+                <div class="impact">
+                  Fewer disputes, cleaner cash handling, and stronger delivery discipline.
+                </div>
+              </div>
+            </div>
+            <div class="phase">
+              <div class="panel card phase-card">
+                <div class="period">Phase 3 | Long term</div>
+                <h3>Enterprise hardening</h3>
+                <ul>
+                  <li>Role-based permissions across all apps</li>
+                  <li>4-eyes approvals for high-value operations</li>
+                  <li>Anomaly detection and security dashboard</li>
+                </ul>
+                <div class="impact">
+                  Scalable governance for growth, audits, and multi-location operations.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <p class="eyebrow">Before vs After</p>
+          <h2>From reactive operations to controlled operations</h2>
+          <p class="subtitle">
+            This is the business transformation Mr. Sadik should expect after the security
+            roadmap is implemented.
+          </p>
+          <div class="content compare">
+            <div class="panel card compare-card bad">
+              <div class="stamp">Before</div>
+              <p class="big">Too much trust. Not enough proof.</p>
+              <ul>
+                <li>Orders can be manipulated after creation</li>
+                <li>Staff discounts and voids are hard to control</li>
+                <li>Riders can claim delivery without strong proof</li>
+                <li>Cash variance is discovered too late</li>
+                <li>Disputes take time and often end in lost revenue</li>
+              </ul>
+            </div>
+            <div class="panel card compare-card good">
+              <div class="stamp">After</div>
+              <p class="big">Controlled flow with clear accountability.</p>
+              <ul>
+                <li>Every delivery has customer confirmation</li>
+                <li>Critical staff actions require manager approval</li>
+                <li>Every change is logged and reviewable</li>
+                <li>Cash and shifts are reconciled per user</li>
+                <li>Fraud patterns become visible instead of hidden</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="wrap">
+          <p class="eyebrow">Client Outcome</p>
+          <h2>What SushiKi gains from this plan</h2>
+          <p class="subtitle">
+            The security investment is not only about stopping fraud. It also improves
+            trust, operations, compliance, and long-term scalability.
+          </p>
+          <div class="content impact-grid">
+            <div class="impact-list">
+              <div class="impact-item">
+                <div>
+                  <strong>Revenue protection</strong>
+                  <span>Fewer chargebacks, fewer fake deliveries, less internal leakage.</span>
+                </div>
+                <div class="badge">Direct ROI</div>
+              </div>
+              <div class="impact-item">
+                <div>
+                  <strong>Staff accountability</strong>
+                  <span>Every sensitive action becomes approved, logged, and reviewable.</span>
+                </div>
+                <div class="badge">Operational</div>
+              </div>
+              <div class="impact-item">
+                <div>
+                  <strong>Stronger delivery proof</strong>
+                  <span>PIN, GPS, and photo proof reduce doorstep disputes dramatically.</span>
+                </div>
+                <div class="badge">Customer</div>
+              </div>
+              <div class="impact-item">
+                <div>
+                  <strong>Cleaner compliance story</strong>
+                  <span>Audit trails help with tax review, dispute review, and internal discipline.</span>
+                </div>
+                <div class="badge">Governance</div>
+              </div>
+            </div>
+            <div class="panel final-quote">
+              <div class="quote">
+                “SushiKi becomes a fraud-resistant business platform, not just an ordering system.”
+              </div>
+              <div class="foot">
+                Recommended starting point: launch Phase 1 first with delivery PIN,
+                manager PIN, and audit log. That gives the fastest protection with the
+                clearest visible result for the client.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

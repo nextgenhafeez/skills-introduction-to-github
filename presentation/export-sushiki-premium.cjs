@@ -2,11 +2,8 @@ const path = require("path");
 const puppeteer = require("../temp_puppeteer/node_modules/puppeteer");
 
 async function main() {
-  const htmlPath = path.resolve(__dirname, "blacklayers-ai-plan-presentation.html");
-  const outputPath = path.resolve(
-    __dirname,
-    "BlackLayersAI-Marketing-Agent-Presentation.pdf"
-  );
+  const htmlPath = path.resolve(__dirname, "sushiki-fraud-plan-premium.html");
+  const outputPath = path.resolve(__dirname, "SushiKi-Fraud-Prevention-Premium.pdf");
 
   const browser = await puppeteer.launch({
     headless: "new",
