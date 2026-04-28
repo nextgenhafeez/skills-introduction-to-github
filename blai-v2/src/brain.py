@@ -793,6 +793,20 @@ def get_recent_video_context(phone: str, message: str) -> str:
 # ---------- /Video recall ----------
 
 def think(phone: str, message: str, image_data: bytes = None, video_path: str = None) -> str:
+    # ---------- /think prefix -> route to thinking agent (Gemini function-calling) ----------
+    # When Boss prefixes a message with /think or /agent, hand it to agent.py
+    # which lets Gemini choose tools and chain them, instead of keyword routing.
+    _trim = (message or "").strip()
+    if _trim.lower().startswith(("/think", "/agent", "/brain ")):
+        try:
+            from src.agent import run as _agent_run
+            cleaned = _trim.split(" ", 1)[1] if " " in _trim else ""
+            if not cleaned:
+                return "Usage: /think <what you want me to do>"
+            return _agent_run(cleaned)
+        except Exception as e:
+            return f"Agent error: {e}"
+    # ---------- /think ----------
     # ---------- VIDEO UNDERSTANDING (transcribe + prepend to message) ----------
     # If a video file arrived with this message, run Whisper transcription
     # FIRST and prepend the result to `message`, so the rest of the pipeline
