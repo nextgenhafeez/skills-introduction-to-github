@@ -3,15 +3,17 @@ from pathlib import Path
 
 _BASE = Path(__file__).parent.parent
 MOOD_FILE = _BASE / "memory" / "mood_history.json"
-MOOD_TAG_RE = re.compile(r"\s*\[MOOD:\s*([a-zA-Z]+)\s*\]\s*$", re.IGNORECASE)
+MOOD_TAG_RE = re.compile(r"\[MOOD:\s*([a-zA-Z]+)\s*\]", re.IGNORECASE)
 
 def parse_and_strip_mood(reply: str):
     if not reply:
         return reply, None
-    m = MOOD_TAG_RE.search(reply)
-    if not m:
+    matches = list(MOOD_TAG_RE.finditer(reply))
+    if not matches:
         return reply, None
-    return reply[:m.start()].rstrip(), m.group(1).lower()
+    mood = matches[-1].group(1).lower()
+    clean_reply = MOOD_TAG_RE.sub("", reply).strip()
+    return clean_reply, mood
 
 def save_mood(phone: str, mood: str, message: str):
     if not mood:

@@ -277,6 +277,7 @@ def get_context_for_user(phone: str) -> str:
 CORRECTION_SIGNALS = [
     "no ", "wrong", "don't", "do not", "stop ", "actually", "instead",
     "never ", "always ", "remember", "important", "correction", "fix this",
+    "nonsense", "bad", "incorrect", "dumb", "stupid", "idiot"
 ]
 BOSS_PHONES = {"212641503230", "72426671055054"}
 
