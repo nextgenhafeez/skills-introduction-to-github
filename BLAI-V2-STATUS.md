@@ -1,10 +1,10 @@
 # BLAI v2 — Status & Architecture
 
-**Last updated:** 2026-04-10
+**Last updated:** 2026-05-07
 
 ## Overview
 
-BLAI (Black Layers AI) is Abdul Hafeez's WhatsApp business assistant running 24/7 on Google Cloud VM. Built on Baileys (WhatsApp Web protocol) with multi-LLM brain (Gemini + Groq fallback) and Make.com integration for real social media posting and lead hunting.
+BLAI (Black Layers AI) is transitioning from a 24/7 cloud-based VM to a **local Desktop Agent** (Electron-based Chief of Staff). The old cloud-based servers and high-cost Gemini projects have been decommissioned to eliminate expenses.
 
 ## Architecture
 
@@ -94,9 +94,15 @@ When ALL 11 API keys are exhausted, BLAI sends a multilingual professional maint
 
 With reset time in Morocco timezone and contact info (info@blacklayers.ca).
 
+## Cloud Infrastructure Cleanup (May 7, 2026)
+
+- **Projects Deleted:** `blacklayersai` and `gen-lang-client-0428220581` have been deleted to stop high monthly billing (~$107 CAD).
+- **Billing Status:** Verified as **Disabled** for agent projects.
+- **Transition:** All core logic is being migrated to the `blai-desktop` agent to run locally with zero cloud compute costs.
+
 ## Next Session Priorities
 
-1. Fix 440 disconnect permanently (try alternate WhatsApp library)
-2. Build Kling AI video generation skill
-3. Make.com lead hunting workflow
-4. Dashboard logo fix
+1. Finalize `blai-desktop` persistence (license/API key storage).
+2. Integrate WhatsApp bridge directly into the desktop agent.
+3. Re-enable Make.com skill routing from the local agent.
+4. Professionalize UI with "Chief of Staff" persona.

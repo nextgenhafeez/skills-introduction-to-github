@@ -1,4 +1,4 @@
-# Black Layers AI Marketing Agent — Cloud Setup Plan
+# [DECOMMISSIONED] Black Layers AI Marketing Agent — Cloud Setup Plan
 
 ## Current Live System (April 1, 2026)
 
@@ -320,7 +320,8 @@ systemctl --user restart openclaw-gateway
 
 ---
 
-*Last updated: April 1, 2026*
-*System: Google Cloud + OpenClaw v2026.3.31 + Gemini (4 models) + VM Qwen 1.5B + Mac Qwen 14B via Tailscale*
-*Agent: BLAI (BlackLayer AI)*
-*Status: LIVE and running 24/7*
+---
+
+**ARCHIVE NOTICE (May 7, 2026):** This cloud-based setup has been decommissioned to eliminate high operating costs. The project has transitioned to a local **Desktop Agent** architecture.
+
+*Status: DECOMMISSIONED*

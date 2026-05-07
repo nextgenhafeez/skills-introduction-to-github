@@ -12,7 +12,7 @@ After GitHub Pages finishes deploying, your site should be available at:
 
 - A professional one-page portfolio website
 - Resume-style summary and skills sections
-- Project highlights
+- Project highlights (including **BLAI Desktop Agent**)
 - Contact and hiring call-to-action
 - Mobile-friendly layout for GitHub Pages
 
